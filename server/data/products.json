@@ -1,0 +1,11 @@
+[
+  {
+    "barcode": "123456789",
+    "name": "Apple",
+    "description": "Fresh red apple",
+    "ingredients": ["Apple"],
+    "price": 0.99,
+    "imageUrl": "https://example.com/apple.jpg",
+    "primaryCategory": "Produce"
+  }
+]
