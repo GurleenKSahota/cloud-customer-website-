@@ -68,12 +68,101 @@ function renderCategoryCheckboxes(categories) {
 	});
 }
 
+
+
 function onCategoryCheckboxChange(event) {
-	// Placeholder for future filter logic
-	console.log('Category checkbox changed:', {
-		value: event.target.value,
-		checked: event.target.checked,
-		primary: event.target.dataset.primary,
-		secondary: event.target.dataset.secondary
+	// Collect checked checkboxes for each category level
+	const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]:checked');
+	if (checkboxes.length === 0) {
+		// No categories selected: clear product list and return
+		const list = document.getElementById('product-list');
+		list.innerHTML = '';
+		return;
+	}
+	let primary = null, secondary = null, tertiary = null;
+	checkboxes.forEach(cb => {
+		if (cb.dataset.secondary) {
+			// tertiary
+			tertiary = cb.value;
+			secondary = cb.dataset.secondary;
+			primary = cb.dataset.primary;
+		} else if (cb.dataset.primary) {
+			// secondary
+			secondary = cb.value;
+			primary = cb.dataset.primary;
+		} else {
+			// primary
+			primary = cb.value;
+		}
+	});
+
+	// Build query string
+	const params = new URLSearchParams();
+	if (primary) params.append('primary', primary);
+	if (secondary) params.append('secondary', secondary);
+	if (tertiary) params.append('tertiary', tertiary);
+
+	fetch(`/products${params.toString() ? '?' + params.toString() : ''}`)
+		.then(res => res.json())
+		.then(products => {
+			renderProducts(products);
+		})
+		.catch(error => {
+			console.error('Error fetching products:', error);
+		});
+}
+
+
+function renderProducts(products) {
+	const list = document.getElementById('product-list');
+	list.innerHTML = '';
+	if (!products || products.length === 0) {
+		list.textContent = 'No products found.';
+		return;
+	}
+	products.forEach(product => {
+		const card = document.createElement('div');
+		// Name
+		const name = document.createElement('h3');
+		name.textContent = product.name;
+		card.appendChild(name);
+		// Image
+		if (product.imageUrl) {
+			const img = document.createElement('img');
+			img.src = product.imageUrl;
+			img.alt = product.name;
+			img.style.maxWidth = '120px';
+			card.appendChild(img);
+		}
+		// Description
+		const desc = document.createElement('p');
+		desc.textContent = product.description;
+		card.appendChild(desc);
+		// Ingredients
+		if (Array.isArray(product.ingredients) && product.ingredients.length > 0) {
+			const ingLabel = document.createElement('strong');
+			ingLabel.textContent = 'Ingredients:';
+			card.appendChild(ingLabel);
+			const ingList = document.createElement('ul');
+			product.ingredients.forEach(ing => {
+				const li = document.createElement('li');
+				li.textContent = ing;
+				ingList.appendChild(li);
+			});
+			card.appendChild(ingList);
+		}
+		// Price
+		const price = document.createElement('p');
+		price.textContent = `Price: $${product.price.toFixed(2)}`;
+		card.appendChild(price);
+		// Category info
+		const catInfo = document.createElement('p');
+		let catText = `Category: ${product.primaryCategory}`;
+		if (product.secondaryCategory) catText += ` > ${product.secondaryCategory}`;
+		if (product.tertiaryCategory) catText += ` > ${product.tertiaryCategory}`;
+		catInfo.textContent = catText;
+		card.appendChild(catInfo);
+		// Add card to list
+		list.appendChild(card);
 	});
 }
