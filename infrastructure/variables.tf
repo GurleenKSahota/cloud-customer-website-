@@ -1,6 +1,7 @@
 variable "aws_region" {
   type    = string
-  default = "us-west-2"
+  default = "us-east-1"
+
 }
 
 variable "project_name" {
@@ -15,7 +16,7 @@ variable "environment" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.micro"
+  default = "t2.micro"
 }
 
 variable "key_pair_name" {

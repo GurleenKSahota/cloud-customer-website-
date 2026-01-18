@@ -14,9 +14,9 @@ provider "aws" {
 
 # EC2 instance for the web server
 resource "aws_instance" "web" {
-  ami = "ami-0c02fb55956c7d316"
+  ami = "ami-04b4f1a9cf54c11d0"
   instance_type = var.instance_type
-  key_name      = "customer-website-key"
+  key_name = var.key_pair_name
 
   tags = {
     Name = "customer-website-ec2"
