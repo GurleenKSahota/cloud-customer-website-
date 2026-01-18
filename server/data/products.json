@@ -7,5 +7,53 @@
     "price": 0.99,
     "imageUrl": "https://example.com/apple.jpg",
     "primaryCategory": "Produce"
+  },
+  {
+    "barcode": "4011",
+    "name": "Banana",
+    "description": "Fresh, ripe bananas perfect for snacking or baking.",
+    "ingredients": ["Banana"],
+    "price": 0.29,
+    "imageUrl": "/images/banana.jpg",
+    "primaryCategory": "Produce"
+  },
+  {
+    "barcode": "0028400047685",
+    "name": "Whole Milk",
+    "description": "Gallon of whole milk, rich in calcium and vitamin D.",
+    "ingredients": ["Milk", "Vitamin D3"],
+    "price": 3.49,
+    "imageUrl": "/images/whole-milk.jpg",
+    "primaryCategory": "Dairy"
+  },
+  {
+    "barcode": "073410950102",
+    "name": "Sourdough Bread",
+    "description": "Artisan sourdough bread with a crisp crust and tangy flavor.",
+    "ingredients": ["Flour", "Water", "Salt", "Yeast"],
+    "price": 4.99,
+    "imageUrl": "/images/sourdough-bread.jpg",
+    "primaryCategory": "Bakery",
+    "secondaryCategory": "Bread"
+  },
+  {
+    "barcode": "033383000463",
+    "name": "Strawberries",
+    "description": "Sweet, juicy strawberries, perfect for desserts or snacking.",
+    "ingredients": ["Strawberries"],
+    "price": 2.99,
+    "imageUrl": "/images/strawberries.jpg",
+    "primaryCategory": "Produce",
+    "secondaryCategory": "Berries",
+    "tertiaryCategory": "Organic"
+  },
+  {
+    "barcode": "070847023015",
+    "name": "Cheddar Cheese",
+    "description": "Sharp cheddar cheese block, great for slicing or melting.",
+    "ingredients": ["Pasteurized Milk", "Salt", "Cheese Cultures", "Enzymes"],
+    "price": 5.49,
+    "imageUrl": "/images/cheddar-cheese.jpg",
+    "primaryCategory": "Dairy"
   }
 ]
