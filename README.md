@@ -27,3 +27,13 @@ After verification, the EC2 instance was stopped to avoid AWS Academy Lab charge
 
 Deployment verification was performed by accessing the application via the EC2 public IP and application port while the instance was running.
 
+### Deployment Script Configuration
+
+The `deploy.sh` script is parameterized using environment variables to allow it to be run in different AWS Academy Learner Lab environments. The script expects the following environment variables to be set prior to execution:
+
+- `EC2_PUBLIC_IP`: The public IP address of the target EC2 instance.
+- `SSH_KEY_PATH`: The path to the SSH private key used to connect to the instance.
+
+This allows graders to run the deployment script using their own EC2 instances and SSH keys without modifying the script itself!
+
+
