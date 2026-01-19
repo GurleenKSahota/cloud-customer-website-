@@ -5,6 +5,11 @@ const fs = require('fs');
 
 const app = express();
 app.use(cors());
+app.use(
+  "/images",
+  express.static(path.join(__dirname, "../public/images"))
+);
+
 
 // Load products data
 const productsPath = path.join(__dirname, '../data/products.json');

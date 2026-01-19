@@ -14,7 +14,7 @@
     "description": "Fresh, ripe bananas perfect for snacking or baking.",
     "ingredients": ["Banana"],
     "price": 0.29,
-    "imageUrl": "/images/banana.jpg",
+    "imageUrl": "/images/banana.jpeg",
     "primaryCategory": "Produce"
   },
   {
@@ -47,7 +47,7 @@
     "secondaryCategory": "Berries",
     "tertiaryCategory": "Organic"
   },
-  {
+	{
     "barcode": "070847023015",
     "name": "Cheddar Cheese",
     "description": "Sharp cheddar cheese block, great for slicing or melting.",
@@ -55,5 +55,145 @@
     "price": 5.49,
     "imageUrl": "/images/cheddar-cheese.jpg",
     "primaryCategory": "Dairy"
+  },
+  {
+    "barcode": "036632011452",
+    "name": "Frozen Peas",
+    "description": "Sweet green peas, frozen for freshness.",
+    "ingredients": ["Peas"],
+    "price": 1.99,
+    "imageUrl": "/images/frozen-peas.jpg",
+    "primaryCategory": "Frozen",
+    "secondaryCategory": "Vegetables"
+  },
+  {
+    "barcode": "041190000019",
+    "name": "Spaghetti Pasta",
+    "description": "Classic dry spaghetti pasta, perfect for Italian dishes.",
+    "ingredients": ["Durum Wheat Semolina"],
+    "price": 1.29,
+    "imageUrl": "/images/spaghetti-pasta.jpg",
+    "primaryCategory": "Dry Goods",
+    "secondaryCategory": "Pasta"
+  },
+  {
+    "barcode": "071012000123",
+    "name": "Paper Towels",
+    "description": "2-pack of strong, absorbent paper towels.",
+    "ingredients": ["Paper"],
+    "price": 3.99,
+    "imageUrl": "/images/paper-towels.jpg",
+    "primaryCategory": "Household Supplies",
+    "secondaryCategory": "Paper Products"
+  },
+  {
+    "barcode": "028400642013",
+    "name": "Frozen Pepperoni Pizza",
+    "description": "12-inch frozen pizza topped with pepperoni and mozzarella.",
+    "ingredients": ["Enriched Wheat Flour", "Tomato Sauce", "Mozzarella Cheese", "Pepperoni", "Yeast", "Salt"],
+    "price": 6.49,
+    "imageUrl": "/images/frozen-pepperoni-pizza.jpg",
+    "primaryCategory": "Frozen",
+    "secondaryCategory": "Meals"
+  },
+  {
+    "barcode": "070847021234",
+    "name": "Greek Yogurt",
+    "description": "Plain nonfat Greek yogurt, high in protein.",
+    "ingredients": ["Cultured Grade A Nonfat Milk"],
+    "price": 4.29,
+    "imageUrl": "/images/greek-yogurt.jpg",
+    "primaryCategory": "Dairy"
+  },
+  {
+    "barcode": "073410950210",
+    "name": "Whole Wheat Bread",
+    "description": "Freshly baked whole wheat sandwich bread.",
+    "ingredients": ["Whole Wheat Flour", "Water", "Yeast", "Salt", "Honey"],
+    "price": 3.99,
+    "imageUrl": "/images/whole-wheat-bread.jpg",
+    "primaryCategory": "Bakery",
+    "secondaryCategory": "Bread"
+  },
+  {
+    "barcode": "041190000111",
+    "name": "Brown Rice",
+    "description": "Long grain brown rice, a healthy side for any meal.",
+    "ingredients": ["Brown Rice"],
+    "price": 2.49,
+    "imageUrl": "/images/brown-rice.jpg",
+    "primaryCategory": "Dry Goods",
+    "secondaryCategory": "Rice",
+    "tertiaryCategory": "Whole Grain"
+  },
+  {
+    "barcode": "071012000456",
+    "name": "Laundry Detergent",
+    "description": "Liquid laundry detergent for 32 loads.",
+    "ingredients": ["Surfactants", "Enzymes", "Fragrance"],
+    "price": 8.99,
+    "imageUrl": "/images/laundry-detergent.jpg",
+    "primaryCategory": "Household Supplies",
+    "secondaryCategory": "Cleaning"
+  },
+  {
+    "barcode": "04963406",
+    "name": "Frozen Mixed Berries",
+    "description": "A blend of strawberries, blueberries, and raspberries, frozen for smoothies.",
+    "ingredients": ["Strawberries", "Blueberries", "Raspberries"],
+    "price": 5.99,
+    "imageUrl": "/images/frozen-mixed-berries.jpeg",
+    "primaryCategory": "Frozen",
+    "secondaryCategory": "Fruit"
+  },
+  {
+    "barcode": "012345678905",
+    "name": "Almond Milk",
+    "description": "Unsweetened almond milk, dairy-free and vegan.",
+    "ingredients": ["Almonds", "Water", "Calcium Carbonate", "Sea Salt"],
+    "price": 3.79,
+    "imageUrl": "/images/almond-milk.jpg",
+    "primaryCategory": "Dairy Alternatives"
+  },
+  {
+    "barcode": "098765432109",
+    "name": "Granola Bars",
+    "description": "Oats and honey granola bars, perfect for snacking.",
+    "ingredients": ["Whole Grain Oats", "Honey", "Brown Sugar", "Canola Oil"],
+    "price": 2.99,
+    "imageUrl": "/images/granola-bars.jpg",
+    "primaryCategory": "Dry Goods",
+    "secondaryCategory": "Snacks"
+  },
+  {
+    "barcode": "021130126008",
+    "name": "Dish Soap",
+    "description": "Lemon-scented dishwashing liquid.",
+    "ingredients": ["Water", "Surfactants", "Fragrance", "Preservative"],
+    "price": 2.49,
+    "imageUrl": "/images/dish-soap.jpg",
+    "primaryCategory": "Household Supplies",
+    "secondaryCategory": "Cleaning"
+  },
+  {
+    "barcode": "073410950305",
+    "name": "Croissants",
+    "description": "Buttery, flaky croissants baked fresh daily.",
+    "ingredients": ["Wheat Flour", "Butter", "Yeast", "Sugar", "Salt"],
+    "price": 4.59,
+    "imageUrl": "/images/croissants.jpg",
+    "primaryCategory": "Bakery",
+    "secondaryCategory": "Pastries"
+  },
+  {
+    "barcode": "041190000222",
+    "name": "Quinoa",
+    "description": "Organic white quinoa, a protein-rich grain.",
+    "ingredients": ["Quinoa"],
+    "price": 3.99,
+    "imageUrl": "/images/quinoa.jpg",
+    "primaryCategory": "Dry Goods",
+    "secondaryCategory": "Grains",
+    "tertiaryCategory": "Organic"
   }
 ]
