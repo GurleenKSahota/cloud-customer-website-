@@ -1,10 +1,18 @@
 #!/bin/bash
 set -e
 
+if [[ -z "$EC2_PUBLIC_IP" || -z "$SSH_KEY_PATH" ]]; then
+  echo "ERROR: Missing required environment variables."
+  echo "Please set:"
+  echo "  EC2_PUBLIC_IP=<ec2-public-ip>"
+  echo "  SSH_KEY_PATH=<path-to-ssh-key.pem>"
+  exit 1
+fi
+
 # ---------- CONFIG ----------
 EC2_USER=ubuntu
-EC2_IP=$(cd infrastructure && terraform output -raw public_ip)
-KEY_PATH=~/.ssh/customer-website-key.pem
+EC2_IP=${EC2_PUBLIC_IP}
+KEY_PATH=${SSH_KEY_PATH}
 
 APP_NAME=customer-website
 REMOTE_BASE=/home/ubuntu
