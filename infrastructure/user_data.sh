@@ -8,7 +8,7 @@ dnf install -y nodejs npm git
 # Go to ec2-user home
 cd /home/ec2-user
 
-# Clone your GitHub Classroom repo
+# Clone GitHub Classroom repo
 git clone https://github.com/seattle-university-cs-cloud-computing/homework-series-GurleenKSahota.git
 
 # Go to server directory
