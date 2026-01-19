@@ -5,7 +5,7 @@
     "description": "Fresh red apple",
     "ingredients": ["Apple"],
     "price": 0.99,
-    "imageUrl": "https://example.com/apple.jpg",
+    "imageUrl": "/images/apple.jpeg",
     "primaryCategory": "Produce"
   },
   {
