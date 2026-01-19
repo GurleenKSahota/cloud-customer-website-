@@ -71,36 +71,38 @@ function renderCategoryCheckboxes(categories) {
 
 
 function onCategoryCheckboxChange(event) {
-	// Collect checked checkboxes for each category level
+	// Collect checked checkboxes for each category level (supporting multiple selections)
 	const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]:checked');
 	if (checkboxes.length === 0) {
-		// No categories selected: clear product list and return
 		const list = document.getElementById('product-list');
 		list.innerHTML = '';
 		return;
 	}
-	let primary = null, secondary = null, tertiary = null;
+	const primary = [];
+	const secondary = [];
+	const tertiary = [];
 	checkboxes.forEach(cb => {
 		if (cb.dataset.secondary) {
 			// tertiary
-			tertiary = cb.value;
-			secondary = cb.dataset.secondary;
-			primary = cb.dataset.primary;
+			tertiary.push(cb.value);
+			secondary.push(cb.dataset.secondary);
+			primary.push(cb.dataset.primary);
 		} else if (cb.dataset.primary) {
 			// secondary
-			secondary = cb.value;
-			primary = cb.dataset.primary;
+			secondary.push(cb.value);
+			primary.push(cb.dataset.primary);
 		} else {
 			// primary
-			primary = cb.value;
+			primary.push(cb.value);
 		}
 	});
 
-	// Build query string
+	// Remove duplicates
+	const unique = arr => Array.from(new Set(arr));
 	const params = new URLSearchParams();
-	if (primary) params.append('primary', primary);
-	if (secondary) params.append('secondary', secondary);
-	if (tertiary) params.append('tertiary', tertiary);
+	if (primary.length) params.append('primary', unique(primary).join(','));
+	if (secondary.length) params.append('secondary', unique(secondary).join(','));
+	if (tertiary.length) params.append('tertiary', unique(tertiary).join(','));
 
 	fetch(`/products${params.toString() ? '?' + params.toString() : ''}`)
 		.then(res => res.json())
