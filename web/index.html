@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Grocery Product Catalog</title>
+	<title>Farmer's Market</title>
+	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-	<main>
-		<section id="filters">
-			<h2>Categories</h2>
-			<div id="category-filters"></div>
-		</section>
-		<section id="products">
-			<h2>Products</h2>
-			<div id="product-list"></div>
-		</section>
-	</main>
+	<header class="hero">
+		<h1 class="welcome">Farmer's Market 🌾</h1>
+		<p class="tagline">Fresh from the farm to your table</p>
+	</header>
+	<div class="container">
+		<main>
+			<section id="filters">
+				<h2>Browse Categories</h2>
+				<div id="category-filters"></div>
+			</section>
+			<section id="products">
+				<h2>Fresh Picks</h2>
+				<div id="product-list"></div>
+			</section>
+		</main>
+	</div>
+	<footer class="site-footer">
+		<p>Made with 💚 at the Farmer's Market</p>
+	</footer>
 	<script src="app.js"></script>
 </body>
 </html>

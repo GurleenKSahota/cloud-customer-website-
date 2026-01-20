@@ -1,108 +1,160 @@
 
+// Store category data globally for dropdown population
+let categoryData = [];
+
 window.addEventListener('DOMContentLoaded', () => {
 	fetch('/categories')
 		.then(res => res.json())
 		.then(categories => {
-			renderCategoryCheckboxes(categories);
+			categoryData = categories;
+			renderCategoryDropdowns(categories);
+			// Fetch all products on initial page load
+			fetchFilteredProducts();
 		})
 		.catch(error => {
 			console.error('Error fetching categories:', error);
 		});
 });
 
-function renderCategoryCheckboxes(categories) {
+function renderCategoryDropdowns(categories) {
 	const container = document.getElementById('category-filters');
 	container.innerHTML = '';
-	categories.forEach(primary => {
-		// Primary category checkbox
-		const primaryId = `primary-${encodeURIComponent(primary.name)}`;
-		const primaryLabel = document.createElement('label');
-		const primaryCheckbox = document.createElement('input');
-		primaryCheckbox.type = 'checkbox';
-		primaryCheckbox.value = primary.name;
-		primaryCheckbox.id = primaryId;
-		primaryCheckbox.addEventListener('change', onCategoryCheckboxChange);
-		primaryLabel.appendChild(primaryCheckbox);
-		primaryLabel.appendChild(document.createTextNode(` ${primary.name}`));
-		container.appendChild(primaryLabel);
-		container.appendChild(document.createElement('br'));
 
-		// Secondary categories
-		if (primary.secondaries && primary.secondaries.length > 0) {
-			primary.secondaries.forEach(secondary => {
-				const secondaryId = `secondary-${encodeURIComponent(primary.name)}-${encodeURIComponent(secondary.name)}`;
-				const secondaryLabel = document.createElement('label');
-				const secondaryCheckbox = document.createElement('input');
-				secondaryCheckbox.type = 'checkbox';
-				secondaryCheckbox.value = secondary.name;
-				secondaryCheckbox.id = secondaryId;
-				secondaryCheckbox.dataset.primary = primary.name;
-				secondaryCheckbox.addEventListener('change', onCategoryCheckboxChange);
-				secondaryLabel.style.marginLeft = '1.5em';
-				secondaryLabel.appendChild(secondaryCheckbox);
-				secondaryLabel.appendChild(document.createTextNode(` ${secondary.name}`));
-				container.appendChild(secondaryLabel);
-				container.appendChild(document.createElement('br'));
-
-				// Tertiary categories
-				if (secondary.tertiaries && secondary.tertiaries.length > 0) {
-					secondary.tertiaries.forEach(tertiary => {
-						const tertiaryId = `tertiary-${encodeURIComponent(primary.name)}-${encodeURIComponent(secondary.name)}-${encodeURIComponent(tertiary.name)}`;
-						const tertiaryLabel = document.createElement('label');
-						const tertiaryCheckbox = document.createElement('input');
-						tertiaryCheckbox.type = 'checkbox';
-						tertiaryCheckbox.value = tertiary.name;
-						tertiaryCheckbox.id = tertiaryId;
-						tertiaryCheckbox.dataset.primary = primary.name;
-						tertiaryCheckbox.dataset.secondary = secondary.name;
-						tertiaryCheckbox.addEventListener('change', onCategoryCheckboxChange);
-						tertiaryLabel.style.marginLeft = '3em';
-						tertiaryLabel.appendChild(tertiaryCheckbox);
-						tertiaryLabel.appendChild(document.createTextNode(` ${tertiary.name}`));
-						container.appendChild(tertiaryLabel);
-						container.appendChild(document.createElement('br'));
-					});
-				}
-			});
-		}
+	// Primary dropdown
+	const primaryGroup = document.createElement('div');
+	primaryGroup.className = 'dropdown-group';
+	const primaryLabel = document.createElement('label');
+	primaryLabel.textContent = 'Category';
+	primaryLabel.setAttribute('for', 'primary-select');
+	const primarySelect = document.createElement('select');
+	primarySelect.id = 'primary-select';
+	primarySelect.innerHTML = '<option value="">All Categories</option>';
+	categories.forEach(cat => {
+		const opt = document.createElement('option');
+		opt.value = cat.name;
+		opt.textContent = cat.name;
+		primarySelect.appendChild(opt);
 	});
+	primarySelect.addEventListener('change', onPrimaryChange);
+	primaryGroup.appendChild(primaryLabel);
+	primaryGroup.appendChild(primarySelect);
+	container.appendChild(primaryGroup);
+
+	// Secondary dropdown
+	const secondaryGroup = document.createElement('div');
+	secondaryGroup.className = 'dropdown-group';
+	const secondaryLabel = document.createElement('label');
+	secondaryLabel.textContent = 'Subcategory';
+	secondaryLabel.setAttribute('for', 'secondary-select');
+	const secondarySelect = document.createElement('select');
+	secondarySelect.id = 'secondary-select';
+	secondarySelect.innerHTML = '<option value="">All Subcategories</option>';
+	secondarySelect.disabled = true;
+	secondarySelect.addEventListener('change', onSecondaryChange);
+	secondaryGroup.appendChild(secondaryLabel);
+	secondaryGroup.appendChild(secondarySelect);
+	container.appendChild(secondaryGroup);
+
+	// Tertiary dropdown
+	const tertiaryGroup = document.createElement('div');
+	tertiaryGroup.className = 'dropdown-group';
+	const tertiaryLabel = document.createElement('label');
+	tertiaryLabel.textContent = 'Type';
+	tertiaryLabel.setAttribute('for', 'tertiary-select');
+	const tertiarySelect = document.createElement('select');
+	tertiarySelect.id = 'tertiary-select';
+	tertiarySelect.innerHTML = '<option value="">All Types</option>';
+	tertiarySelect.disabled = true;
+	tertiarySelect.addEventListener('change', onTertiaryChange);
+	tertiaryGroup.appendChild(tertiaryLabel);
+	tertiaryGroup.appendChild(tertiarySelect);
+	container.appendChild(tertiaryGroup);
 }
 
+function onPrimaryChange() {
+	const primarySelect = document.getElementById('primary-select');
+	const secondarySelect = document.getElementById('secondary-select');
+	const tertiarySelect = document.getElementById('tertiary-select');
+	const primaryValue = primarySelect.value;
 
+	// Reset and disable secondary and tertiary
+	secondarySelect.innerHTML = '<option value="">All Subcategories</option>';
+	tertiarySelect.innerHTML = '<option value="">All Types</option>';
+	tertiarySelect.disabled = true;
 
-function onCategoryCheckboxChange(event) {
-	// Collect checked checkboxes for each category level (supporting multiple selections)
-	const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]:checked');
-	if (checkboxes.length === 0) {
-		const list = document.getElementById('product-list');
-		list.innerHTML = '';
-		return;
-	}
-	const primary = [];
-	const secondary = [];
-	const tertiary = [];
-	checkboxes.forEach(cb => {
-		if (cb.dataset.secondary) {
-			// tertiary
-			tertiary.push(cb.value);
-			secondary.push(cb.dataset.secondary);
-			primary.push(cb.dataset.primary);
-		} else if (cb.dataset.primary) {
-			// secondary
-			secondary.push(cb.value);
-			primary.push(cb.dataset.primary);
+	if (primaryValue) {
+		const primary = categoryData.find(c => c.name === primaryValue);
+		if (primary && primary.secondaries && primary.secondaries.length > 0) {
+			primary.secondaries.forEach(sec => {
+				const opt = document.createElement('option');
+				opt.value = sec.name;
+				opt.textContent = sec.name;
+				secondarySelect.appendChild(opt);
+			});
+			secondarySelect.disabled = false;
 		} else {
-			// primary
-			primary.push(cb.value);
+			secondarySelect.disabled = true;
 		}
-	});
+	} else {
+		secondarySelect.disabled = true;
+	}
 
-	// Remove duplicates
-	const unique = arr => Array.from(new Set(arr));
+	fetchFilteredProducts();
+}
+
+function onSecondaryChange() {
+	const primarySelect = document.getElementById('primary-select');
+	const secondarySelect = document.getElementById('secondary-select');
+	const tertiarySelect = document.getElementById('tertiary-select');
+	const primaryValue = primarySelect.value;
+	const secondaryValue = secondarySelect.value;
+
+	// Reset tertiary
+	tertiarySelect.innerHTML = '<option value="">All Types</option>';
+
+	if (primaryValue && secondaryValue) {
+		const primary = categoryData.find(c => c.name === primaryValue);
+		if (primary) {
+			const secondary = primary.secondaries.find(s => s.name === secondaryValue);
+			if (secondary && secondary.tertiaries && secondary.tertiaries.length > 0) {
+				secondary.tertiaries.forEach(ter => {
+					const opt = document.createElement('option');
+					opt.value = ter.name;
+					opt.textContent = ter.name;
+					tertiarySelect.appendChild(opt);
+				});
+				tertiarySelect.disabled = false;
+			} else {
+				tertiarySelect.disabled = true;
+			}
+		}
+	} else {
+		tertiarySelect.disabled = true;
+	}
+
+	fetchFilteredProducts();
+}
+
+function onTertiaryChange() {
+	fetchFilteredProducts();
+}
+
+function fetchFilteredProducts() {
+	const primarySelect = document.getElementById('primary-select');
+	const secondarySelect = document.getElementById('secondary-select');
+	const tertiarySelect = document.getElementById('tertiary-select');
+
+	const primary = primarySelect.value;
+	const secondary = secondarySelect.value;
+	const tertiary = tertiarySelect.value;
+
+	// Build query params - if no primary selected, fetch all products
 	const params = new URLSearchParams();
-	if (primary.length) params.append('primary', unique(primary).join(','));
-	if (secondary.length) params.append('secondary', unique(secondary).join(','));
-	if (tertiary.length) params.append('tertiary', unique(tertiary).join(','));
+	if (primary) {
+		params.append('primary', primary);
+		if (secondary) params.append('secondary', secondary);
+		if (tertiary) params.append('tertiary', tertiary);
+	}
 
 	fetch(`/products${params.toString() ? '?' + params.toString() : ''}`)
 		.then(res => res.json())
@@ -113,6 +165,10 @@ function onCategoryCheckboxChange(event) {
 			console.error('Error fetching products:', error);
 		});
 }
+
+
+
+
 
 
 function renderProducts(products) {
@@ -128,12 +184,17 @@ function renderProducts(products) {
 		const name = document.createElement('h3');
 		name.textContent = product.name;
 		card.appendChild(name);
+		// Barcode
+		if (product.barcode) {
+			const barcode = document.createElement('p');
+			barcode.textContent = `Barcode: ${product.barcode}`;
+			card.appendChild(barcode);
+		}
 		// Image
 		if (product.imageUrl) {
 			const img = document.createElement('img');
 			img.src = product.imageUrl;
 			img.alt = product.name;
-			img.style.maxWidth = '120px';
 			card.appendChild(img);
 		}
 		// Description
