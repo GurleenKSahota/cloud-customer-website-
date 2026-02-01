@@ -103,6 +103,67 @@ h2::after {
   background: #c08080;
 }
 
+/* ===== Store Selector Section ===== */
+#store-selector {
+  background: linear-gradient(135deg, #f9f0ed 0%, #f3e8e4 100%);
+  padding: 28px 32px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  border: 2px solid #e0ccc8;
+  box-shadow: 0 2px 12px rgba(192, 128, 128, 0.1);
+}
+
+#store-selection {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+#store-selection .dropdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  max-width: 400px;
+}
+
+#store-selection label {
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: #8a6a6a;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-family: 'Inter', sans-serif;
+}
+
+#store-select {
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  border: 2px solid #d4a5a5;
+  border-radius: 8px;
+  background: #fff;
+  color: #3d3d3d;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23b06868' d='M7 10L1 3h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  font-weight: 500;
+}
+
+#store-select:hover {
+  border-color: #c08080;
+  box-shadow: 0 2px 8px rgba(192, 128, 128, 0.15);
+}
+
+#store-select:focus {
+  outline: none;
+  border-color: #b06868;
+  box-shadow: 0 0 0 3px rgba(176, 104, 104, 0.2);
+}
+
 /* ===== Categories Section ===== */
 #filters {
   background: #faf5f5;
@@ -249,7 +310,8 @@ h2::after {
 }
 
 /* Price Styling */
-#product-list > div > p:nth-of-type(3) {
+#product-list > div > p:nth-of-type(3),
+.price-container {
   font-size: 1.1rem;
   font-weight: 700;
   color: #c06060;
@@ -260,6 +322,83 @@ h2::after {
   padding: 8px 14px;
   border-radius: 6px;
   display: inline-block;
+}
+
+/* Sale Price Styling */
+.price-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+}
+
+.price-container.on-sale {
+  background: linear-gradient(135deg, #ffe8e8 0%, #fdf3f3 100%);
+  border: 1px solid #f5d0d0;
+}
+
+.original-price {
+  font-size: 0.85rem;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.sale-price {
+  font-size: 1.2rem;
+  color: #d04040;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sale-badge {
+  font-size: 0.65rem;
+  background: #d04040;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Inventory Badge */
+.inventory-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin: 8px 24px 0 24px;
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.inventory-status.in-stock {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.inventory-status.low-stock {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+}
+
+.inventory-status.out-of-stock {
+  background: #fce4ec;
+  color: #c2185b;
+  border: 1px solid #f8bbd0;
+}
+
+.inventory-status.no-store {
+  background: #f5f5f5;
+  color: #757575;
+  border: 1px solid #e0e0e0;
+  font-style: italic;
 }
 
 
