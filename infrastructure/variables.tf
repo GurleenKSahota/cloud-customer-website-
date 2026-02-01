@@ -22,3 +22,27 @@ variable "instance_type" {
 variable "key_pair_name" {
   type = string
 }
+
+variable "db_instance_class" {
+  type    = string
+  default = "db.t3.micro"
+  description = "RDS instance class"
+}
+
+variable "db_name" {
+  type    = string
+  default = "customer_website"
+  description = "Database name"
+}
+
+variable "db_username" {
+  type    = string
+  default = "dbadmin"
+  description = "Database master username"
+}
+
+variable "db_password" {
+  type      = string
+  sensitive = true
+  description = "Database master password"
+}
