@@ -1,6 +1,12 @@
+# Terraform state files - never commit
 .terraform/
 *.tfstate
 *.tfstate.*
+*.tfstate.backup
+
+# Terraform lock file
 .terraform.lock.hcl
-terraform.tfvars
+
+# Keep terraform.tfvars for assignment submission
+# (In production, you'd use secrets management)
 
