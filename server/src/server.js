@@ -20,7 +20,6 @@ const pool = new Pool({
   ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
 });
 
-// Helper: build category tree
 async function buildCategoryTree() {
 	const result = await pool.query('SELECT DISTINCT primary_category, secondary_category, tertiary_category FROM products');
 	const tree = {};
@@ -144,8 +143,7 @@ app.get('/stores', async (req, res) => {
 	}
 });
 
-// GET /inventory/:storeId - Get inventory for specific store
-// This is a SEPARATE endpoint from products (as required)
+// GET /inventory/:storeId
 app.get('/inventory/:storeId', async (req, res) => {
 	try {
 		const storeId = parseInt(req.params.storeId);

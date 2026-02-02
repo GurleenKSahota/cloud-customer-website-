@@ -1,5 +1,4 @@
 
-// Store category data globally for dropdown population
 let categoryData = [];
 let selectedStoreId = null;
 let inventoryData = {};
