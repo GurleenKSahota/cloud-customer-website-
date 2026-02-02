@@ -149,6 +149,12 @@ resource "aws_instance" "web_server" {
 
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
+  # Increase root volume size to 10GB
+  root_block_device {
+    volume_size = 10
+    volume_type = "gp3"
+  }
+
   user_data = templatefile("${path.module}/user_data.sh", {
     db_host     = aws_db_instance.postgres.address
     db_port     = aws_db_instance.postgres.port
