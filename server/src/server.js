@@ -17,6 +17,7 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'customer_website',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
+  ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
 });
 
 // Helper: build category tree
