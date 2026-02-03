@@ -23,6 +23,9 @@ A grocery store website where customers can browse products, filter by category,
    - Or download from [postgresql.org](https://www.postgresql.org/download/)
    - **Note:** During PostgreSQL installation, you will be prompted to set a username and password. Remember these for the steps below.
 
+**Important Note for Local Development:**
+Most local PostgreSQL installations do not support SSL connections. This project is configured to automatically disable SSL when connecting to a local database (DB_HOST=localhost). If you see an error like "The server does not support SSL connections," you do not need to change any environment variables—just ensure DB_HOST is set to localhost. For production (AWS RDS), SSL will be enabled automatically.
+
 **Steps:**
 1. Export your local PostgreSQL credentials (use your own username and password):
    ```bash
@@ -31,6 +34,23 @@ A grocery store website where customers can browse products, filter by category,
    export DB_USER=your_local_pg_username
    export DB_PASSWORD=your_local_pg_password
    ```
+
+   > **Note:** If you are unsure about any of these values (especially DB_HOST, DB_USER, or DB_PASSWORD), see the "Troubleshooting: Database Credentials" section below after step #4 for tips and common solutions!
+
+2. Install dependencies and populate database:
+   ```bash
+   cd customer-website  # If not already in the server directory
+   cd server
+   npm install
+   node database/populate.js
+   ```
+
+3. Start the server:
+   ```bash
+   npm start
+   ```
+
+4. Open browser: `http://localhost:3000`
 
 **Environment Variable Quick Reference:**
 - `DB_HOST`: Usually `localhost` for local development. If unsure, use `localhost`.
@@ -47,22 +67,6 @@ A grocery store website where customers can browse products, filter by category,
    3. Or, create a new user: `CREATE USER myuser WITH PASSWORD 'mypassword';`
 - If you use pgAdmin, check your connection settings for your username and password.
  - **Tip:** If you see “role 'postgres' does not exist,” set `DB_USER=$(whoami)` and try again.
-
-
-2. Install dependencies and populate database:
-   ```bash
-   cd customer-website  # If not already in the server directory
-   cd server
-   npm install
-   node database/populate.js
-   ```
-
-3. Start the server:
-   ```bash
-   npm start
-   ```
-
-4. Open browser: `http://localhost:3000`
 
 -------------------
 
