@@ -179,6 +179,6 @@ app.use(express.static(webPath));
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 app.listen(PORT, HOST, () => {
-	console.log(`Server running on http://${HOST}:${PORT}`);
+  console.log('Server running. Open http://localhost:3000 in your browser (or http://<EC2_IP>:3000 if deployed).');
 });
 
