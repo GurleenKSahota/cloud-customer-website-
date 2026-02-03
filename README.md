@@ -72,6 +72,8 @@ Most local PostgreSQL installations do not support SSL connections. This project
 
 ## Deployment
 
+> **Note:** EC2 and RDS are stopped (per professor’s instructions). You must manually start them in AWS before running the app.
+
 ### Prerequisites
 - AWS credentials configured (for Terraform):
   ```bash
@@ -86,10 +88,13 @@ Most local PostgreSQL installations do not support SSL connections. This project
 ```bash
 cd infrastructure
 terraform init
-terraform apply
+terraform refresh   # Syncs Terraform state with AWS (required because EC2 and RDS are stopped, not terminated, per professor’s instructions!)
+terraform output    # Shows current resource details (public IP, DNS, etc.)
+
+Only run `terraform apply` if the EC2 and RDS resources have been terminated or destroyed and you need to recreate them.
 ```
 
-**Note the outputs from terraform** — after you run `terraform apply`, copy the `ec2_public_ip` value from the output for deployment.
+> **Note the outputs from terraform** — after you run `terraform apply`, copy the `ec2_public_ip` value from the output for deployment.
 
 The above applied terraform creates EC2 and RDS instances. Database credentials are auto-configured on EC2 via `user_data.sh`.
 
@@ -146,6 +151,6 @@ export SSH_KEY_PATH=<path-to-your-ec2-ssh-key.pem>
 
 ---
 
-Thank you for checking out my project! Hope you had fun testing it.
+Thank you for checking out my project! Hope you had fun testing it!
 
 
