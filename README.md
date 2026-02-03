@@ -58,15 +58,10 @@ Most local PostgreSQL installations do not support SSL connections. This project
 - `DB_USER`: Your local PostgreSQL username. If unsure, try your system username (run `whoami` in terminal) or `postgres`. If you get an error, see troubleshooting below.
 - `DB_PASSWORD`: The password for your PostgreSQL user. If unsure, try leaving it blank by setting `DB_PASSWORD=''` (empty quotes), or set/reset it using `psql` and the `\password` command (see troubleshooting below).
 
-**Troubleshooting: Database Credentials**
-- Your username is often your system username or `postgres`.
-- If you don’t remember your password, try leaving `DB_PASSWORD` blank or use your computer login password.
-- If you get an authentication error:
-   1. Open a terminal and run: `psql -U postgres` (or your system username).
-   2. To set a password: `\password postgres`
-   3. Or, create a new user: `CREATE USER myuser WITH PASSWORD 'mypassword';`
-- If you use pgAdmin, check your connection settings for your username and password.
- - **Tip:** If you see “role 'postgres' does not exist,” set `DB_USER=$(whoami)` and try again.
+**Troubleshooting (PostgreSQL credentials):**
+- `DB_USER` is usually your system username (`whoami`) or `postgres`
+- If authentication fails, reset the password using `\password` in `psql`
+- If unsure, check your connection settings in pgAdmin
 
 -------------------
 
