@@ -17,7 +17,8 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'customer_website',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false,
+	// Disable SSL for local development; enable for production (non-localhost)
+	ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
 });
 
 async function buildCategoryTree() {
