@@ -1,151 +1,151 @@
-# Customer Website
+# Customer Website + Point of Sale API
 
-A grocery store website where customers can browse products, filter by category, and check inventory at different stores.
+A farmer's market grocery website with an external POS API for inventory management.
 
 ## Tech Stack
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Node.js + Express
-- **Database**: PostgreSQL
-- **Infrastructure**: AWS EC2 + RDS (Terraform)
+- **Website**: Node.js + Express, HTML/CSS/JS, PostgreSQL (runs on EC2, port 3000)
+- **POS API**: Node.js + Express (runs on a separate EC2, port 3001)
+- **API Gateway**: AWS API Gateway with API key protection (proxies to POS EC2)
+- **Database**: AWS RDS (PostgreSQL, shared by both services)
+- **Infrastructure**: Terraform (2 EC2 instances, RDS, API Gateway)
 
-----------------
+---
 
-## Local Setup
+## Prerequisites
 
-**Prerequisites:**
-- **Node.js:**
-   - macOS: `brew install node`
-   - Ubuntu: `sudo apt-get install nodejs npm`
-   - Or download from [nodejs.org](https://nodejs.org/en/download/)
-- **PostgreSQL:**
-   - macOS: `brew install postgresql`
-   - Ubuntu: `sudo apt-get install postgresql postgresql-contrib`
-   - Or download from [postgresql.org](https://www.postgresql.org/download/)
-   - **Note:** During PostgreSQL installation, you will be prompted to set a username and password. Remember these for the steps below.
+The following must be installed on your local machine:
+- **Terraform** — provisions all AWS resources
+- **Node.js + npm** — used locally only if testing
+- **SSH key pair** named `vockey` in your AWS account (download the `.pem` from Learner Lab > AWS Details)
 
-**Important Note for Local Development:**
-Most local PostgreSQL installations do not support SSL connections. This project is configured to automatically disable SSL when connecting to a local database (DB_HOST=localhost). If you see an error like "The server does not support SSL connections," you do not need to change any environment variables—just ensure DB_HOST is set to localhost. For production (AWS RDS), SSL will be enabled automatically.
+Configure AWS credentials before running any commands:
+```bash
+export AWS_ACCESS_KEY_ID=<your-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret>
+export AWS_SESSION_TOKEN=<your-token>
+```
 
-**Steps:**
-1. Export your local PostgreSQL credentials (use your own username and password):
-   ```bash
-   export DB_HOST=localhost
-   export DB_NAME=customer_website
-   export DB_USER=your_local_pg_username
-   export DB_PASSWORD=your_local_pg_password
-   ```
+---
 
-   > **Note:** If you are unsure about any of these values (especially DB_HOST, DB_USER, or DB_PASSWORD), see the "Troubleshooting: Database Credentials" section below after step #4 for tips and common solutions!
+## Step 1: Provision Infrastructure
 
-2. Install dependencies and populate database:
-   ```bash
-   cd customer-website  # If not already in the server directory
-   cd server
-   npm install
-   node database/populate.js
-   ```
-
-3. Start the server:
-   ```bash
-   npm start
-   ```
-
-4. Open browser: `http://localhost:3000`
-
-**Environment Variable Quick Reference:**
-- `DB_HOST`: Usually `localhost` for local development. If unsure, use `localhost`.
-- `DB_NAME`: The name of your database, e.g., `customer_website`. If unsure, use `customer_website` (the setup script will create it).
-- `DB_USER`: Your local PostgreSQL username. If unsure, try your system username (run `whoami` in terminal) or `postgres`. If you get an error, see troubleshooting below.
-- `DB_PASSWORD`: The password for your PostgreSQL user. If unsure, try leaving it blank by setting `DB_PASSWORD=''` (empty quotes), or set/reset it using `psql` and the `\password` command (see troubleshooting below).
-
-**Troubleshooting (PostgreSQL credentials):**
-- `DB_USER` is usually your system username (`whoami`) or `postgres`
-- If authentication fails, reset the password using `\password` in `psql`
-- If unsure, check your connection settings in pgAdmin
-
--------------------
-
-## Deployment
-
-> **Note:** EC2 and RDS are stopped (per professor’s instructions). You must manually start them in AWS before running the app.
-
-### Prerequisites
-- AWS credentials configured (for Terraform):
-  ```bash
-  export AWS_ACCESS_KEY_ID=<your-key>
-  export AWS_SECRET_ACCESS_KEY=<your-secret>
-  export AWS_SESSION_TOKEN=<your-token>
-  ```
-- Terraform installed
-- SSH key for EC2 access
-
-### Step 1: Provision Infrastructure
 ```bash
 cd infrastructure
 terraform init
-terraform refresh   # Syncs Terraform state with AWS (required because EC2 and RDS are stopped, not terminated, per professor’s instructions!)
-terraform output    # Shows current resource details (public IP, DNS, etc.)
-
-Only run `terraform apply` if the EC2 and RDS resources have been terminated or destroyed and you need to recreate them.
+terraform apply
 ```
 
-> **Note the outputs from terraform** — after you run `terraform apply`, copy the `ec2_public_ip` value from the output for deployment.
+This creates:
+- **EC2 #1** — hosts the customer website (port 3000)
+- **EC2 #2** — hosts the POS inventory service (port 3001)
+- **RDS** — PostgreSQL database (shared by both services)
+- **API Gateway** — public-facing REST API with API key enforcement
+- **Security Groups** — network access controls
 
-The above applied terraform creates EC2 and RDS instances. Database credentials are auto-configured on EC2 via `user_data.sh`.
+---
 
-### Step 2: Deploy Application
-Go back to project root and run the deployment script:
+## Step 2: Deploy
+
+Wait 2-3 minutes after `terraform apply` for the EC2 instances to finish bootstrapping, then from the project root:
+
 ```bash
-cd ..
-export EC2_PUBLIC_IP=<ec2_public_ip from terraform output>
-export SSH_KEY_PATH=<path-to-your-ec2-ssh-key.pem>
-# Tip: Use the SSH key you created and downloaded during the “Create Key Pair” step when launching your EC2 instance in AWS Academy. If you don’t have it, you can create a new key pair in the EC2 dashboard and launch a new instance with it. Never share your private key with anyone.
-./deploy.sh
+SSH_KEY_PATH=/path/to/labsuser.pem ./deploy.sh
 ```
 
-**What the script does:**
-1. Packages the application source code into a compressed archive, excluding infrastructure files, Git metadata, and `node_modules`
-2. Copies the archive to the EC2 instance using `scp`
-3. Connects to the EC2 instance via SSH
-4. Stops any previously running Node.js server
-5. Removes the existing deployed application
-6. Extracts the new application version on the EC2 instance
-7. Installs backend dependencies using `npm install`
-8. Sets up and populates the database with sample data
-9. Starts the Node.js server in the background
+This deploys **both** services in one command:
+1. Website -> EC2 #1 (installs deps, seeds database, starts server on port 3000)
+2. POS Service -> EC2 #2 (installs deps, starts server on port 3001)
 
-**Access deployed app:** `http://<EC2_IP>:3000`
+After deployment, the script prints the website URL and POS API URL.
 
 ---
 
-## API Endpoints
+## Step 3: Test the POS API
 
-**Base URL:** `http://localhost:3000` (local) or `http://<EC2_IP>:3000` (deployed)
+```bash
+./sample-client.sh
+```
 
-| Endpoint | Description | Example |
-|----------|-------------|---------|
-| `GET /categories` | Get all product categories (tree structure) | `/categories` |
-| `GET /products` | Get all products with optional filters | `/products?primary=Produce` |
-| `GET /stores` | Get all store locations | `/stores` |
-| `GET /inventory/:storeId` | Get inventory for specific store | `/inventory/1` |
+Runs 10 requests against the POS API:
+- 8 functional tests (2 per endpoint) — all should show `PASSED`
+- 2 edge case tests (no API key, over-deduct) — both should show `PASSED`
 
-**Filter examples:**
-- By primary category: `/products?primary=Produce`
-- By secondary category: `/products?secondary=Vegetables`
-- By multiple categories: `/products?primary=Produce&secondary=Vegetables`
+The API URL and API key are automatically retrieved from Terraform outputs.
 
 ---
 
-## How to Use
+## Repeatability
 
-1. **Visit the homepage** at `http://localhost:3000` or `http://<EC2_IP>:3000`
-2. **Select a store** from the dropdown to see which products are in stock
-3. **Filter products** by category using the dropdowns
-4. **View sale prices** - discounted items show both original and sale price
-5. **Browse products** - each card shows name, price, and stock availability
+To prove the deployment is repeatable:
+
+```bash
+cd infrastructure
+terraform destroy          # tear down everything
+terraform init && terraform apply  # recreate from scratch
+cd ..
+SSH_KEY_PATH=/path/to/labsuser.pem ./deploy.sh
+./sample-client.sh         # all tests should pass again
+```
 
 ---
 
-Thank you for checking out my project! Hope you had fun testing it!
+## POS API Endpoints
 
+All endpoints require the `x-api-key` header. Base URL is printed by the deploy script, or run:
+```bash
+terraform -chdir=infrastructure output -raw pos_api_url
+```
 
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/inventory/check?storeId=&barcode=&quantity=` | GET | Check if a store has at least N of a product |
+| `/inventory/price?storeId=&barcode=` | GET | Get product price with any active sales applied |
+| `/inventory/deduct` | POST | Deduct quantity of one product from a store |
+| `/inventory/deduct-batch` | POST | Deduct multiple products from a store (atomic) |
+
+**Deduct single** request body:
+```json
+{"storeId": 1, "barcode": "123456789", "quantity": 2}
+```
+
+**Deduct batch** request body:
+```json
+{"storeId": 1, "items": [{"barcode": "123456789", "quantity": 2}, {"barcode": "4011", "quantity": 1}]}
+```
+
+Business rules:
+- Deductions fail if inventory would go negative (returns 409)
+- Batch deductions are atomic — if any item fails, the entire batch is rolled back
+
+---
+
+## Website Endpoints
+
+**Base URL:** `http://<EC2_IP>:3000` (printed by deploy script)
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /categories` | Product category tree |
+| `GET /products` | Products with optional filters (`?primary=Produce`) |
+| `GET /stores` | All store locations |
+| `GET /inventory/:storeId` | Inventory for a specific store |
+
+Inventory changes made through the POS API are reflected on the website in real time.
+
+---
+
+## Retrieving the API Key
+
+```bash
+terraform -chdir=infrastructure output -raw pos_api_key_value
+```
+
+---
+
+## Cleanup
+
+To stop incurring costs, destroy all resources:
+```bash
+cd infrastructure
+terraform destroy
+```
