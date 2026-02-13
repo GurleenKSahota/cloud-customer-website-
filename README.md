@@ -149,3 +149,9 @@ To stop incurring costs, destroy all resources:
 cd infrastructure
 terraform destroy
 ```
+
+---
+
+## Thank You
+
+Thank you for reviewing this project!
