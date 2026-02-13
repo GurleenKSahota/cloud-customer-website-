@@ -68,11 +68,11 @@ resource "aws_security_group" "db_sg" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description     = "PostgreSQL from EC2"
+    description     = "PostgreSQL from EC2 instances"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.web_sg.id]
+    security_groups = [aws_security_group.web_sg.id, aws_security_group.pos_sg.id]
   }
 
   egress {
