@@ -1,29 +1,39 @@
 #!/bin/bash
 set -e
 
-if [[ -z "$EC2_PUBLIC_IP" || -z "$SSH_KEY_PATH" ]]; then
-  echo "ERROR: Missing required environment variables."
-  echo "Please set:"
-  echo "  EC2_PUBLIC_IP=<ec2-public-ip>"
-  echo "  SSH_KEY_PATH=<path-to-ssh-key.pem>"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+INFRA_DIR="$SCRIPT_DIR/infrastructure"
+
+# --- All dynamic values from terraform output (no hardcoded IPs/ARNs) ---
+EC2_IP=$(terraform -chdir="$INFRA_DIR" output -raw ec2_public_ip)
+POS_EC2_IP=$(terraform -chdir="$INFRA_DIR" output -raw pos_ec2_public_ip)
+API_URL=$(terraform -chdir="$INFRA_DIR" output -raw pos_api_url)
+
+# SSH key path for EC2 access
+if [[ -z "$SSH_KEY_PATH" ]]; then
+  echo "ERROR: SSH_KEY_PATH is required."
+  echo "Usage: SSH_KEY_PATH=/path/to/your-key.pem ./deploy.sh"
   exit 1
 fi
+KEY_PATH="$SSH_KEY_PATH"
 
 # ---------- CONFIG ----------
 EC2_USER=ec2-user
-EC2_IP=${EC2_PUBLIC_IP}
-KEY_PATH=${SSH_KEY_PATH}
-
 APP_NAME=customer-website
 REMOTE_BASE=/home/ec2-user
 REMOTE_APP_DIR=$REMOTE_BASE/$APP_NAME
 ARCHIVE_NAME=$APP_NAME.tar.gz
 SERVER_PORT=3000
+POS_PORT=3001
 # ----------------------------
 
-echo "Packaging application..."
+# ========================================
+# Part 1: Deploy website to EC2
+# ========================================
+echo ""
+echo "=== Deploying Website to EC2 ==="
 
-# 1. Package application (no node_modules, no infra)
+echo "Packaging application..."
 tar --exclude=node_modules \
     --exclude=infrastructure \
     --exclude=.git \
@@ -31,17 +41,13 @@ tar --exclude=node_modules \
     -czf $ARCHIVE_NAME -C .. customer-website
 
 echo "Transferring archive to EC2..."
-
-# 2. Copy archive to EC2
-scp -i $KEY_PATH -o StrictHostKeyChecking=no $ARCHIVE_NAME $EC2_USER@$EC2_IP:$REMOTE_BASE/
+scp -i "$KEY_PATH" -o StrictHostKeyChecking=no $ARCHIVE_NAME $EC2_USER@$EC2_IP:$REMOTE_BASE/
 
 echo "Deploying on EC2..."
-
-# 3–7. Unpack, stop old, replace, start new
-ssh -i $KEY_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << EOF
+ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << EOF
   set -e
   cd $REMOTE_BASE
-  
+
   # Source database config created by user_data
   source ~/db_config.sh
 
@@ -59,13 +65,60 @@ ssh -i $KEY_PATH -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << EOF
   cd $REMOTE_APP_DIR/server
   npm install
   node database/populate.js
-  
+
   # Start server
   nohup node src/server.js > server.log 2>&1 &
 EOF
 
-# Cleanup local archive
-rm $ARCHIVE_NAME
+rm -f $ARCHIVE_NAME
+echo "Website deployed: http://$EC2_IP:$SERVER_PORT"
 
-echo "Deploy complete."
-echo "Visit: http://$EC2_IP:$SERVER_PORT"
+# ========================================
+# Part 2: Deploy POS Service to EC2
+# ========================================
+echo ""
+echo "=== Deploying POS Service to EC2 ==="
+
+POS_DIR="$SCRIPT_DIR/pos-service"
+
+echo "Transferring POS service files..."
+scp -i "$KEY_PATH" -o StrictHostKeyChecking=no \
+  "$POS_DIR/index.js" "$POS_DIR/package.json" \
+  $EC2_USER@$POS_EC2_IP:$REMOTE_BASE/pos-service/
+
+echo "Installing dependencies and starting POS service..."
+ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no $EC2_USER@$POS_EC2_IP << EOF
+  set -e
+
+  # Source database config created by user_data
+  source ~/db_config_pos.sh
+
+  # Stop old POS service if running
+  pkill -f "node index.js" || true
+  sleep 1
+
+  # Install dependencies
+  cd $REMOTE_BASE/pos-service
+  npm install --production
+
+  # Start POS service
+  nohup node index.js > pos-service.log 2>&1 &
+
+  # Wait a moment and verify it started
+  sleep 2
+  if curl -s http://localhost:$POS_PORT/health > /dev/null 2>&1; then
+    echo "POS service is running on port $POS_PORT"
+  else
+    echo "WARNING: POS service may not have started correctly"
+    cat pos-service.log
+  fi
+EOF
+
+# ========================================
+# Done
+# ========================================
+echo ""
+echo "=== All deployments complete ==="
+echo "Website:  http://$EC2_IP:$SERVER_PORT"
+echo "POS API:  $API_URL"
+echo "POS EC2:  http://$POS_EC2_IP:$POS_PORT"
