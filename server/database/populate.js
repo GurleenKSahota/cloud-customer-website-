@@ -67,25 +67,22 @@ async function populateStores() {
 
 async function populateInventory() {
   console.log('Populating inventory...');
-  
+
   // Get all stores and products
   const storesResult = await pool.query('SELECT id FROM stores');
   const productsResult = await pool.query('SELECT id FROM products');
-  
+
   const storeIds = storesResult.rows.map(r => r.id);
   const productIds = productsResult.rows.map(r => r.id);
 
   let inventoryCount = 0;
-  
+
   // Each store will have most products, but with varying quantities
   for (const storeId of storeIds) {
     for (const productId of productIds) {
-      // Randomly skip 20% of products to make inventory more realistic
-      if (Math.random() < 0.2) continue;
-      
-      // Random quantity between 0 and 100
-      const quantity = Math.floor(Math.random() * 101);
-      
+      // Random quantity between 1 and 100
+      const quantity = Math.floor(Math.random() * 100) + 1;
+
       await pool.query(
         'INSERT INTO inventory (store_id, product_id, quantity) VALUES ($1, $2, $3)',
         [storeId, productId, quantity]
@@ -98,7 +95,7 @@ async function populateInventory() {
 
 async function populateSales() {
   console.log('Populating sales...');
-  
+
   // Get some product IDs for product-specific sales
   const productsResult = await pool.query(
     "SELECT id, name FROM products WHERE primary_category = 'Produce' LIMIT 3"
@@ -128,7 +125,7 @@ async function populateSales() {
     ['Fresh Produce Special', 25.0, true]
   );
   const produceSaleId = produceSaleResult.rows[0].id;
-  
+
   // Link specific products to this sale
   for (const productId of produceIds) {
     await pool.query(
@@ -150,21 +147,21 @@ async function populateSales() {
 async function main() {
   try {
     console.log('Starting database population...\n');
-    
+
     // Skip schema if SKIP_SCHEMA env var is set (user_data.sh runs it separately)
     if (!process.env.SKIP_SCHEMA) {
       await runSchema();
     } else {
       console.log('⊘ Skipping schema (SKIP_SCHEMA is set)');
     }
-    
+
     await populateProducts();
     await populateStores();
     await populateInventory();
     await populateSales();
-    
+
     console.log('\n✅ Database populated successfully!');
-    
+
     // Show some stats
     const stats = await pool.query(`
       SELECT 
@@ -174,7 +171,7 @@ async function main() {
         (SELECT COUNT(*) FROM sales) as sales
     `);
     console.log('\nDatabase stats:', stats.rows[0]);
-    
+
   } catch (error) {
     console.error('❌ Error populating database:', error);
     throw error;
