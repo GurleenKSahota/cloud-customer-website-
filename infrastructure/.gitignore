@@ -7,6 +7,9 @@
 # Terraform lock file
 .terraform.lock.hcl
 
+# Lambda zip created by archive_file
+*.zip
+
 # Keep terraform.tfvars for assignment submission
 # (In production, you'd use secrets management)
 
