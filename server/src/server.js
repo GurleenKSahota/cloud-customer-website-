@@ -12,13 +12,8 @@ app.use(
 
 // Database connection pool
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'customer_website',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-	// Disable SSL for local development; enable for production (non-localhost)
-	ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
+	connectionString: process.env.DATABASE_URL,
+	ssl: { rejectUnauthorized: false }
 });
 
 async function buildCategoryTree() {
