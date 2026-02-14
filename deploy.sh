@@ -48,6 +48,20 @@ ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << EOF
   set -e
   cd $REMOTE_BASE
 
+  # Wait for EC2 bootstrapping to complete (user_data creates this file)
+  echo "Waiting for EC2 bootstrapping to complete..."
+  WAIT_COUNT=0
+  while [ ! -f ~/db_config.sh ]; do
+    WAIT_COUNT=\$((WAIT_COUNT + 1))
+    if [ \$WAIT_COUNT -ge 40 ]; then
+      echo "ERROR: Timed out waiting for bootstrapping (10 minutes)"
+      exit 1
+    fi
+    echo "  Still bootstrapping... (\${WAIT_COUNT}/40)"
+    sleep 15
+  done
+  echo "Bootstrapping complete!"
+
   # Source database config created by user_data
   source ~/db_config.sh
 
@@ -89,6 +103,20 @@ scp -i "$KEY_PATH" -o StrictHostKeyChecking=no \
 echo "Installing dependencies and starting POS service..."
 ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no $EC2_USER@$POS_EC2_IP << EOF
   set -e
+
+  # Wait for EC2 bootstrapping to complete (user_data creates this file)
+  echo "Waiting for EC2 bootstrapping to complete..."
+  WAIT_COUNT=0
+  while [ ! -f ~/db_config_pos.sh ]; do
+    WAIT_COUNT=\$((WAIT_COUNT + 1))
+    if [ \$WAIT_COUNT -ge 40 ]; then
+      echo "ERROR: Timed out waiting for bootstrapping (10 minutes)"
+      exit 1
+    fi
+    echo "  Still bootstrapping... (\${WAIT_COUNT}/40)"
+    sleep 15
+  done
+  echo "Bootstrapping complete!"
 
   # Source database config created by user_data
   source ~/db_config_pos.sh
