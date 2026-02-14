@@ -16,6 +16,7 @@ export DB_PORT="${db_port}"
 export DB_NAME="${db_name}"
 export DB_USER="${db_username}"
 export DB_PASSWORD="${db_password}"
+export DATABASE_URL="postgresql://${db_username}:${db_password}@${db_host}:${db_port}/${db_name}"
 EOF
 chown ec2-user:ec2-user /home/ec2-user/db_config.sh
 
