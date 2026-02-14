@@ -1,10 +1,9 @@
 aws_region     = "us-east-1"
 instance_type = "t2.micro"
-key_pair_name = "customer-website-key"
+key_pair_name = "vockey"
 
 # Database configuration
 db_instance_class = "db.t3.micro"
 db_name          = "customer_website"
 db_username      = "dbadmin"
-db_password      = "FarmersMarket2026!"  # Change this to a secure password
-
+db_password      = "FarmersMarket2026!"  
