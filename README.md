@@ -46,9 +46,10 @@ This creates:
 
 ## Step 2: Deploy
 
-Wait 2-3 minutes after `terraform apply` for the EC2 instances to finish bootstrapping, then from the project root:
+Wait ~10 minutes after `terraform apply` completes for the EC2 instances to finish bootstrapping, then:
 
 ```bash
+cd ..
 SSH_KEY_PATH=/path/to/labsuser.pem ./deploy.sh
 ```
 
