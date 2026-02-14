@@ -59,11 +59,11 @@ echo "Endpoint 1: Check Stock"
 echo "=========================================="
 
 # Request 1: Check if store 1 has at least 5 Apples (barcode: 123456789)
-request "Check stock: 5 Apples at store 1" \
+request "Check stock: at least 5 Apples at store 1 (Capitol Hill)" \
   GET "$API_URL/check?storeId=1&barcode=123456789&quantity=5"
 
 # Request 2: Check if store 2 has at least 3 Frozen Peas (barcode: 036632011452)
-request "Check stock: 3 Frozen Peas at store 2" \
+request "Check stock: at least 3 Frozen Peas at store 2 (Kirkland)" \
   GET "$API_URL/check?storeId=2&barcode=036632011452&quantity=3"
 
 # ============================================================
@@ -74,11 +74,11 @@ echo "Endpoint 2: Get Price"
 echo "=========================================="
 
 # Request 1: Get price of Whole Milk at store 1 (Dairy — should show 15% Dairy Days sale)
-request "Price: Whole Milk at store 1 (Dairy Days 15% off)" \
+request "Price: Whole Milk at store 1 Capitol Hill (Dairy Days 15% off)" \
   GET "$API_URL/price?storeId=1&barcode=0028400047685"
 
 # Request 2: Get price of Spaghetti Pasta at store 3 (no active sale)
-request "Price: Spaghetti Pasta at store 3 (no sale)" \
+request "Price: Spaghetti Pasta at store 3 Bothell (no sale)" \
   GET "$API_URL/price?storeId=3&barcode=041190000019"
 
 # ============================================================
@@ -89,14 +89,14 @@ echo "Endpoint 3: Deduct Single"
 echo "=========================================="
 
 # Request 1: Deduct 1 Banana from store 1 (barcode: 4011)
-request "Deduct: 1 Banana from store 1" \
+request "Deduct: 1 Banana from store 1 (Capitol Hill)" \
   POST "$API_URL/deduct" \
   '{"storeId": 1, "barcode": "4011", "quantity": 1}'
 
-# Request 2: Deduct 2 Strawberries from store 3 (barcode: 033383000463)
-request "Deduct: 2 Strawberries from store 3" \
+# Request 2: Deduct 1 Frozen Peas from store 3 (barcode: 036632011452)
+request "Deduct: 1 Frozen Peas from store 3 (Bothell)" \
   POST "$API_URL/deduct" \
-  '{"storeId": 3, "barcode": "033383000463", "quantity": 2}'
+  '{"storeId": 3, "barcode": "036632011452", "quantity": 1}'
 
 # ============================================================
 # Endpoint 4: Deduct Batch (POST /inventory/deduct-batch)
@@ -106,14 +106,14 @@ echo "Endpoint 4: Deduct Batch"
 echo "=========================================="
 
 # Request 1: Deduct Sourdough Bread + Cheddar Cheese from store 1
-request "Batch deduct: Sourdough Bread + Cheddar Cheese from store 1" \
+request "Batch deduct: Sourdough Bread + Cheddar Cheese from store 1 (Capitol Hill)" \
   POST "$API_URL/deduct-batch" \
   '{"storeId": 1, "items": [{"barcode": "073410950102", "quantity": 1}, {"barcode": "070847023015", "quantity": 1}]}'
 
 # Request 2: Deduct Apple + Spaghetti Pasta from store 4
-request "Batch deduct: Apple + Spaghetti Pasta from store 4" \
+request "Batch deduct: Apple + Spaghetti Pasta from store 4 (Snohomish)" \
   POST "$API_URL/deduct-batch" \
-  '{"storeId": 4, "items": [{"barcode": "123456789", "quantity": 1}, {"barcode": "041190000019", "quantity": 2}]}'
+  '{"storeId": 4, "items": [{"barcode": "123456789", "quantity": 1}, {"barcode": "041190000019", "quantity": 1}]}'
 
 echo "=========================================="
 echo "=== All 8 successful requests complete ==="
