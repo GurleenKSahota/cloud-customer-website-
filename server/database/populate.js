@@ -75,8 +75,8 @@ async function populateInventory() {
   // Each store will have most products, but with varying quantities
   for (const storeId of storeIds) {
     for (const productId of productIds) {
-      // Random quantity between 1 and 100
-      const quantity = Math.floor(Math.random() * 100) + 1;
+      // Random quantity between 20 and 100 (minimum 20 ensures tests work across multiple runs)
+      const quantity = Math.floor(Math.random() * 81) + 20;
 
       await pool.query(
         'INSERT INTO inventory (store_id, product_id, quantity) VALUES ($1, $2, $3)',
