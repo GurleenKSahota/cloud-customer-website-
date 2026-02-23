@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer's Market — Employee Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🌾 Employee Portal</h1>
+                <p>Farmer's Market Inventory Management</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="you@farmersmarket.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" id="login-btn">Sign In</button>
+                <p id="login-error" class="error-msg"></p>
+            </form>
+
+            <!-- New Password Form (for first-time login with temp password) -->
+            <form id="new-password-form" style="display:none;">
+                <p class="info-msg">Your account requires a new password. Please set one below.</p>
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" placeholder="Choose a new password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Confirm your new password" required>
+                </div>
+                <button type="submit" id="new-password-btn">Set New Password</button>
+                <p id="new-password-error" class="error-msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard (hidden until authenticated) -->
+    <div id="dashboard" style="display:none;">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>🌾 Employee Portal</h1>
+            </div>
+            <div class="header-right">
+                <span id="user-email" class="user-info"></span>
+                <button id="logout-btn" class="btn-logout">Sign Out</button>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- Store Selector -->
+            <section class="card" id="store-section">
+                <h2>Select Store</h2>
+                <select id="store-select">
+                    <option value="">Choose a store...</option>
+                </select>
+            </section>
+
+            <!-- Inventory Table -->
+            <section class="card" id="inventory-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Inventory — <span id="store-name"></span></h2>
+                    <button id="add-product-btn" class="btn-primary">+ Add Product</button>
+                </div>
+
+
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Barcode</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-body">
+                    </tbody>
+                </table>
+                <p id="inventory-empty" style="display:none;" class="empty-state">No products stocked at this store.</p>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add Product Modal (top-level so it centers on viewport) -->
+    <div id="add-product-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Product to Store</h3>
+                <button id="close-modal-btn" class="btn-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="product-select">Product</label>
+                <select id="product-select">
+                    <option value="">Select a product...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="initial-quantity">Initial Quantity</label>
+                <input type="number" id="initial-quantity" min="0" value="0" placeholder="0">
+            </div>
+            <button id="confirm-add-btn" class="btn-primary">Add to Inventory</button>
+            <p id="add-error" class="error-msg"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
