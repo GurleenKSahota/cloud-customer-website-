@@ -72,9 +72,12 @@ async function populateInventory() {
 
   let inventoryCount = 0;
 
-  // Each store will have most products, but with varying quantities
+  // Each store will have most products, but not all — so "Add Product" has items to offer
   for (const storeId of storeIds) {
     for (const productId of productIds) {
+      // Skip ~4 products per store so "Add Product" has items available
+      if (Math.random() < 0.2) continue;
+
       // Random quantity between 20 and 100 (minimum 20 ensures tests work across multiple runs)
       const quantity = Math.floor(Math.random() * 81) + 20;
 
