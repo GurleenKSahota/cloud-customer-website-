@@ -1,13 +1,14 @@
-# Customer Website + Point of Sale API
+# Customer Website + Point of Sale API + Internal Employee Portal
 
-A farmer's market grocery website with an external POS API for inventory management.
+A farmer's market grocery website with an external POS API and an internal employee portal for inventory management.
 
 ## Tech Stack
-- **Website**: Node.js + Express, HTML/CSS/JS, PostgreSQL (runs on EC2, port 3000)
-- **POS API**: Node.js + Express (runs on a separate EC2, port 3001)
-- **API Gateway**: AWS API Gateway with API key protection (proxies to POS EC2)
-- **Database**: AWS RDS (PostgreSQL, shared by both services)
-- **Infrastructure**: Terraform (2 EC2 instances, RDS, API Gateway)
+- **Customer Website**: Node.js + Express, HTML/CSS/JS, PostgreSQL (EC2, port 3000)
+- **POS API**: Node.js + Express (EC2, port 3001) + API Gateway with API key
+- **Internal Website**: Node.js + Express, HTML/CSS/JS (EC2, port 3002) + Cognito auth
+- **Database**: AWS RDS (PostgreSQL, shared by all services)
+- **Authentication**: AWS Cognito User Pool (employee-only, no self-registration)
+- **Infrastructure**: Terraform (3 EC2 instances, RDS, API Gateway, Cognito)
 
 ---
 
@@ -15,6 +16,7 @@ A farmer's market grocery website with an external POS API for inventory managem
 
 The following must be installed on your local machine:
 - **Terraform** — provisions all AWS resources
+- **AWS CLI** — needed to create Cognito users
 - **Node.js + npm** — used locally only if testing
 - **SSH key pair** named `vockey` in your AWS account (download the `.pem` from Learner Lab > AWS Details)
 
@@ -38,9 +40,26 @@ terraform apply
 This creates:
 - **EC2 #1** — hosts the customer website (port 3000)
 - **EC2 #2** — hosts the POS inventory service (port 3001)
-- **RDS** — PostgreSQL database (shared by both services)
+- **EC2 #3** — hosts the internal employee website (port 3002)
+- **RDS** — PostgreSQL database (shared by all services)
 - **API Gateway** — public-facing REST API with API key enforcement
+- **Cognito User Pool** — employee authentication (no self-registration)
 - **Security Groups** — network access controls
+
+### Key Terraform Outputs
+
+| Output | Description |
+|--------|-------------|
+| `website_url` | Customer-facing website URL |
+| `pos_api_url` | POS API base URL |
+| `internal_website_url` | Internal employee website URL |
+| `cognito_user_pool_id` | Cognito User Pool ID |
+| `cognito_client_id` | Cognito Client ID |
+
+To view any output:
+```bash
+terraform -chdir=infrastructure output <output_name>
+```
 
 ---
 
@@ -53,15 +72,55 @@ cd ..
 SSH_KEY_PATH=/path/to/labsuser.pem ./deploy.sh
 ```
 
-This deploys **both** services in one command:
-1. Website -> EC2 #1 (installs deps, seeds database, starts server on port 3000)
+This deploys **all three** services in one command:
+1. Customer Website -> EC2 #1 (installs deps, seeds database, starts server on port 3000)
 2. POS Service -> EC2 #2 (installs deps, starts server on port 3001)
+3. Internal Website -> EC2 #3 (installs deps, configures Cognito, starts server on port 3002)
 
-After deployment, the script prints the website URL and POS API URL.
+After deployment, the script prints all URLs.
 
 ---
 
-## Step 3: Test the POS API
+## Step 3: Create a Cognito User
+
+The internal website requires Cognito authentication. Since self-registration is disabled, create users with the provided script:
+
+```bash
+./create-user.sh user@example.com
+```
+
+Or with an optional username:
+```bash
+./create-user.sh user@example.com --username johndoe
+```
+
+The script will output a **temporary password**. On first login, the user will be prompted to set a new password.
+
+---
+
+## Step 4: Access the Internal Website
+
+1. Get the internal website URL:
+   ```bash
+   terraform -chdir=infrastructure output internal_website_url
+   ```
+
+2. Open the URL in your browser.
+
+3. Log in with the email and temporary password from Step 3.
+
+4. You will be prompted to set a new password on first login.
+
+5. After login, you can:
+   - **Select a store** from the dropdown
+   - **View inventory** — see all products stocked at that store
+   - **Edit quantity** — change the stock quantity (must be ≥ 0)
+   - **Add a product** — add a product from the catalog that isn't yet stocked
+   - **Remove a product** — remove a product from the store's inventory
+
+---
+
+## Step 5: Test the POS API
 
 ```bash
 ./sample-client.sh
@@ -71,7 +130,17 @@ Runs 10 requests against the POS API:
 - 8 functional tests (2 per endpoint) — all should show `PASSED`
 - 2 edge case tests (no API key, over-deduct) — both should show `PASSED`
 
-The API URL and API key are automatically retrieved from Terraform outputs.
+---
+
+## IP Restriction (Internal Website)
+
+The internal website's security group restricts access to specific IP addresses. To configure allowed IPs, update `infrastructure/terraform.tfvars`:
+
+```hcl
+allowed_internal_cidrs = ["203.0.113.0/32", "198.51.100.0/32"]
+```
+
+By default, it allows all IPs (`0.0.0.0/0`). After changing, run `terraform apply` to update the security group.
 
 ---
 
@@ -85,6 +154,7 @@ terraform destroy          # tear down everything
 terraform init && terraform apply  # recreate from scratch
 cd ..
 SSH_KEY_PATH=/path/to/labsuser.pem ./deploy.sh
+./create-user.sh grader@example.com
 ./sample-client.sh         # all tests should pass again
 ```
 
@@ -120,9 +190,9 @@ Business rules:
 
 ---
 
-## Website Endpoints
+## Customer Website Endpoints
 
-**Base URL:** `http://<EC2_IP>:3000` (printed by deploy script)
+**Base URL:** `http://<EC2_IP>:3000` (from `terraform -chdir=infrastructure output website_url`)
 
 | Endpoint | Description |
 |----------|-------------|
@@ -130,16 +200,9 @@ Business rules:
 | `GET /products` | Products with optional filters (`?primary=Produce`) |
 | `GET /stores` | All store locations |
 | `GET /inventory/:storeId` | Inventory for a specific store |
+| `GET /sales` | Active sales with discount details |
 
-Inventory changes made through the POS API are reflected on the website in real time.
-
----
-
-## Retrieving the API Key
-
-```bash
-terraform -chdir=infrastructure output -raw pos_api_key_value
-```
+Inventory changes made through the POS API or internal website are reflected on the customer website in real time.
 
 ---
 
