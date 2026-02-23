@@ -46,3 +46,9 @@ variable "db_password" {
   sensitive = true
   description = "Database master password"
 }
+
+variable "allowed_internal_cidrs" {
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+  description = "CIDR blocks allowed to access the internal employee website (port 3002). Set to specific IPs for production."
+}
