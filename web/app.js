@@ -26,7 +26,49 @@ window.addEventListener('DOMContentLoaded', () => {
 		.catch(error => {
 			console.error('Error fetching categories:', error);
 		});
+
+	// Fetch active sales
+	fetch('/sales')
+		.then(res => res.json())
+		.then(sales => {
+			renderSales(sales);
+		})
+		.catch(error => {
+			console.error('Error fetching sales:', error);
+		});
 });
+
+function renderSales(sales) {
+	const list = document.getElementById('sales-list');
+	list.innerHTML = '';
+	if (!sales || sales.length === 0) {
+		list.textContent = 'No active sales at this time.';
+		return;
+	}
+	sales.forEach(sale => {
+		const card = document.createElement('div');
+		card.className = 'sale-card';
+
+		const badge = document.createElement('span');
+		badge.className = 'sale-discount-badge';
+		badge.textContent = `${sale.discountPercentage}% OFF`;
+		card.appendChild(badge);
+
+		const name = document.createElement('h3');
+		name.textContent = sale.name;
+		card.appendChild(name);
+
+		const applies = document.createElement('p');
+		if (sale.productLine) {
+			applies.textContent = `Applies to all ${sale.productLine} products`;
+		} else if (sale.products && sale.products.length > 0) {
+			applies.textContent = `Applies to: ${sale.products.map(p => p.name).join(', ')}`;
+		}
+		card.appendChild(applies);
+
+		list.appendChild(card);
+	});
+}
 
 function renderStoreDropdown(stores) {
 	const storeSelect = document.getElementById('store-select');
@@ -230,19 +272,19 @@ function renderProducts(products) {
 	}
 	products.forEach(product => {
 		const card = document.createElement('div');
-		
+
 		// Name
 		const name = document.createElement('h3');
 		name.textContent = product.name;
 		card.appendChild(name);
-		
+
 		// Barcode
 		if (product.barcode) {
 			const barcode = document.createElement('p');
 			barcode.textContent = `Barcode: ${product.barcode}`;
 			card.appendChild(barcode);
 		}
-		
+
 		// Image
 		if (product.imageUrl) {
 			const img = document.createElement('img');
@@ -250,12 +292,12 @@ function renderProducts(products) {
 			img.alt = product.name;
 			card.appendChild(img);
 		}
-		
+
 		// Description
 		const desc = document.createElement('p');
 		desc.textContent = product.description;
 		card.appendChild(desc);
-		
+
 		// Ingredients
 		if (Array.isArray(product.ingredients) && product.ingredients.length > 0) {
 			const ingLabel = document.createElement('strong');
@@ -269,20 +311,20 @@ function renderProducts(products) {
 			});
 			card.appendChild(ingList);
 		}
-		
+
 		// Price (with sale handling)
 		const priceContainer = document.createElement('div');
 		priceContainer.className = 'price-container';
-		
+
 		if (product.discountPercentage > 0 && product.salePrice) {
 			// Product is on sale
 			priceContainer.classList.add('on-sale');
-			
+
 			const originalPrice = document.createElement('div');
 			originalPrice.className = 'original-price';
 			originalPrice.textContent = `Regular: $${parseFloat(product.price).toFixed(2)}`;
 			priceContainer.appendChild(originalPrice);
-			
+
 			const salePrice = document.createElement('div');
 			salePrice.className = 'sale-price';
 			salePrice.innerHTML = `$${parseFloat(product.salePrice).toFixed(2)} <span class="sale-badge">${product.discountPercentage}% OFF</span>`;
@@ -292,12 +334,12 @@ function renderProducts(products) {
 			priceContainer.textContent = `Price: $${parseFloat(product.price).toFixed(2)}`;
 		}
 		card.appendChild(priceContainer);
-		
+
 		// Inventory status (if store is selected)
 		if (selectedStoreId) {
 			const inventoryStatus = document.createElement('div');
 			inventoryStatus.className = 'inventory-status';
-			
+
 			const quantity = inventoryData[product.id];
 			if (quantity === undefined) {
 				inventoryStatus.classList.add('out-of-stock');
@@ -320,7 +362,7 @@ function renderProducts(products) {
 			inventoryStatus.textContent = 'Select a store to see availability';
 			card.appendChild(inventoryStatus);
 		}
-		
+
 		// Category info
 		const catInfo = document.createElement('p');
 		let catText = `Category: ${product.primaryCategory}`;
@@ -328,7 +370,7 @@ function renderProducts(products) {
 		if (product.tertiaryCategory) catText += ` > ${product.tertiaryCategory}`;
 		catInfo.textContent = catText;
 		card.appendChild(catInfo);
-		
+
 		// Add card to list
 		list.appendChild(card);
 	});

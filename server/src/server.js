@@ -139,6 +139,35 @@ app.get('/stores', async (req, res) => {
 	}
 });
 
+// GET /sales - List active sales with details
+app.get('/sales', async (req, res) => {
+	try {
+		const result = await pool.query(`
+			SELECT 
+				s.id,
+				s.name,
+				s.discount_percentage as "discountPercentage",
+				s.product_line as "productLine",
+				COALESCE(
+					json_agg(
+						json_build_object('id', p.id, 'name', p.name)
+					) FILTER (WHERE p.id IS NOT NULL),
+					'[]'::json
+				) as products
+			FROM sales s
+			LEFT JOIN sale_products sp ON sp.sale_id = s.id
+			LEFT JOIN products p ON p.id = sp.product_id
+			WHERE s.is_active = true
+			GROUP BY s.id, s.name, s.discount_percentage, s.product_line
+			ORDER BY s.discount_percentage DESC
+		`);
+		res.json(result.rows);
+	} catch (error) {
+		console.error('Error fetching sales:', error);
+		res.status(500).json({ error: 'Failed to fetch sales' });
+	}
+});
+
 // GET /inventory/:storeId
 app.get('/inventory/:storeId', async (req, res) => {
 	try {
