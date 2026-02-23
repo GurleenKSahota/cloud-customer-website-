@@ -143,10 +143,83 @@ ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no $EC2_USER@$POS_EC2_IP << EOF
 EOF
 
 # ========================================
+# Part 3: Deploy Internal Website to EC2
+# ========================================
+echo ""
+echo "=== Deploying Internal Website to EC2 ==="
+
+INTERNAL_EC2_IP=$(terraform -chdir="$INFRA_DIR" output -raw internal_ec2_public_ip)
+INTERNAL_DIR="$SCRIPT_DIR/internal-service"
+INTERNAL_PORT=3002
+
+echo "Packaging internal service..."
+tar --exclude=node_modules \
+    -czf internal-service.tar.gz -C "$SCRIPT_DIR" internal-service
+
+echo "Transferring internal service to EC2..."
+scp -i "$KEY_PATH" -o StrictHostKeyChecking=no \
+  internal-service.tar.gz \
+  $EC2_USER@$INTERNAL_EC2_IP:$REMOTE_BASE/
+
+echo "Installing and starting internal website..."
+ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no $EC2_USER@$INTERNAL_EC2_IP << EOF
+  set -e
+
+  # Wait for EC2 bootstrapping to complete
+  echo "Waiting for EC2 bootstrapping to complete..."
+  WAIT_COUNT=0
+  while [ ! -f ~/db_config_internal.sh ]; do
+    WAIT_COUNT=\$((WAIT_COUNT + 1))
+    if [ \$WAIT_COUNT -ge 40 ]; then
+      echo "ERROR: Timed out waiting for bootstrapping (10 minutes)"
+      exit 1
+    fi
+    echo "  Still bootstrapping... (\${WAIT_COUNT}/40)"
+    sleep 15
+  done
+  echo "Bootstrapping complete!"
+
+  # Source database and Cognito config
+  source ~/db_config_internal.sh
+
+  # Stop old service if running
+  pkill -f "node src/server.js" || true
+  sleep 1
+
+  # Remove old version and unpack new
+  cd $REMOTE_BASE
+  rm -rf internal-service
+  tar -xzf internal-service.tar.gz
+  rm internal-service.tar.gz
+
+  # Install dependencies
+  cd internal-service
+  npm install --production
+
+  # Start internal website
+  nohup node src/server.js > internal.log 2>&1 &
+
+  # Verify it started
+  sleep 2
+  if curl -s http://localhost:$INTERNAL_PORT/api/config > /dev/null 2>&1; then
+    echo "Internal website is running on port $INTERNAL_PORT"
+  else
+    echo "WARNING: Internal website may not have started correctly"
+    cat internal.log
+  fi
+EOF
+
+rm -f internal-service.tar.gz
+
+# ========================================
 # Done
 # ========================================
 echo ""
 echo "=== All deployments complete ==="
-echo "Website:  http://$EC2_IP:$SERVER_PORT"
-echo "POS API:  $API_URL"
-echo "POS EC2:  http://$POS_EC2_IP:$POS_PORT"
+echo "Customer Website:   http://$EC2_IP:$SERVER_PORT"
+echo "POS API:            $API_URL"
+echo "POS EC2:            http://$POS_EC2_IP:$POS_PORT"
+echo "Internal Website:   http://$INTERNAL_EC2_IP:$INTERNAL_PORT"
+echo ""
+echo "To create an employee login:  ./create-user.sh <email>"
+
