@@ -64,10 +64,12 @@ This creates:
 | `website_url` | Customer-facing website URL |
 | `pos_api_url` | POS API base URL |
 
-To view any output:
+To view any output while in the project root:
 ```bash
 terraform -chdir=infrastructure output <output_name>
 ```
+
+*(Note: If you are already inside the `infrastructure/` directory, just run `terraform output <output_name>` without the -chdir flag.)*
 
 ---
 
