@@ -255,13 +255,16 @@ function renderInventory() {
         <div class="qty-control">
           <input type="number" min="0" value="${item.quantity}" 
                  id="qty-${item.productId}" class="qty-input">
-          <button class="btn-save" onclick="saveQuantity(${item.productId})">Save</button>
+          <button class="btn-save" data-product-id="${item.productId}">Save</button>
         </div>
       </td>
       <td>
-        <button class="btn-danger" onclick="removeProduct(${item.productId}, '${escapeHtml(item.name)}')">Remove</button>
+        <button class="btn-danger" data-product-id="${item.productId}" data-product-name="${escapeHtml(item.name)}">Remove</button>
       </td>
     `;
+        // Attach event listeners directly to avoid inline handler escaping issues
+        tr.querySelector('.btn-save').addEventListener('click', () => saveQuantity(item.productId));
+        tr.querySelector('.btn-danger').addEventListener('click', () => removeProduct(item.productId, item.name));
         tbody.appendChild(tr);
     });
 }
