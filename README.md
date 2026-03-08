@@ -1,9 +1,9 @@
-# Internal Employee Portal (HW4)
+# Farmer's Market — Employee Portal (HW5)
 
-An internal employee website for managing grocery store inventory, secured with AWS Cognito authentication.
+An internal employee website for managing grocery store inventory with report scheduling, secured with AWS Cognito authentication. Includes a POS API, customer website, traffic generator, and restocking tools.
 
 ## Tech Stack
-- **Internal Website**: Node.js + Express, HTML/CSS/JS (EC2, port 3002) + Cognito auth
+- **Internal Website**: Node.js + Express, HTML/CSS/JS (EC2, port 3002) + Cognito auth + node-cron scheduler
 - **Customer Website**: Node.js + Express (EC2, port 3000)
 - **POS API**: Node.js + Express (EC2, port 3001) + API Gateway with API key
 - **Database**: AWS RDS (PostgreSQL, shared by all services)
@@ -17,6 +17,7 @@ An internal employee website for managing grocery store inventory, secured with 
 - **Terraform** — provisions all AWS resources
 - **AWS CLI** — needed to create Cognito users
 - **SSH key pair** named `vockey` in your AWS account (download the `.pem` from Learner Lab > AWS Details)
+- **python3** — used by the traffic generator to parse JSON responses
 
 Configure AWS credentials before running any commands:
 ```bash
@@ -27,17 +28,11 @@ export AWS_SESSION_TOKEN=<your-token>
 
 ---
 
-## Step 1: Configure IP Restrictions and Provision Infrastructure
+## Step 1: Provision Infrastructure
 
-The internal website's security group restricts access to specific IP addresses. Before provisioning, update `infrastructure/terraform.tfvars` with the allowed CIDR blocks:
+Provision all AWS resources:
 
-```hcl
-allowed_internal_cidrs = ["203.0.113.0/32", "198.51.100.0/32"]
-```
-
-By default, it allows all IPs (`0.0.0.0/0`). Replace with your IP(s) to restrict access.
-
-Then provision all infrastructure:
+> **Optional:** To restrict the internal website to specific IPs, edit `infrastructure/terraform.tfvars` and set `allowed_internal_cidrs`. By default it allows all IPs (`0.0.0.0/0`), so you can skip this.
 
 ```bash
 cd infrastructure
@@ -108,27 +103,86 @@ The script reads the `cognito_user_pool_id` from `terraform output` automaticall
 
 ---
 
-## Step 4: Access the Internal Website
+## Step 4: Traffic Generator
 
-1. Get the internal website URL from the `internal_website_url` terraform output:
+The traffic generator simulates customer purchases by calling the POS deduct API for random products and stores. It runs **locally** on your laptop.
+
+```bash
+./traffic-generator.sh [--count N] [--rate R]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--count N` | Number of deduction calls to make | 10 |
+| `--rate R` | Calls per second | 1 |
+
+**Examples:**
+```bash
+# Make 20 deductions at 2 per second
+./traffic-generator.sh --count 20 --rate 2
+
+# Make 100 deductions at 5 per second
+./traffic-generator.sh --count 100 --rate 5
+```
+
+The script reads the API URL and API key from `terraform output` automatically. It fetches the list of in-stock products and randomly picks one for each deduction.
+
+---
+
+## Step 5: Restocking
+
+After running the traffic generator, your inventory may be depleted. The restocking script adds quantity to all inventory items. It runs **locally** on your laptop.
+
+```bash
+./restock.sh [--amount N] [--store STORE_ID]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--amount N` | Quantity to add to each item | 50 |
+| `--store ID` | Optional: restock only a specific store | all stores |
+
+**Examples:**
+```bash
+# Restock all stores with +50 per item
+./restock.sh
+
+# Restock store 1 only with +100 per item
+./restock.sh --amount 100 --store 1
+```
+
+The script reads the API URL and API key from `terraform output` automatically.
+
+---
+
+## Step 6: Access the Internal Website & Report Scheduling
+
+1. Get the internal website URL:
    ```bash
    terraform -chdir=infrastructure output internal_website_url
    ```
 
-2. Open that URL in your browser.
+2. Open that URL in your browser and log in with the credentials from Step 3.
 
-3. Log in with the email and temporary password from Step 3.
+3. The portal has two tabs:
+   - **Inventory**: Select a store and manage its products (edit quantity, add, remove)
+   - **Reports**: Schedule and view sales reports
 
-4. You will be prompted to set a new password on first login.
+### Scheduling Reports
 
-5. After login, you can:
-   - **Select a store** from the dropdown to view its inventory
-   - **Edit quantity** — change the stock quantity of a product (must be ≥ 0)
-   - **Add a product** — select a product from the catalog not yet stocked and add it with an initial quantity
-   - **Remove a product** — remove a product from the store's inventory
+In the Reports tab:
+1. Choose the **Lookback Window** (previous hour, day, or week)
+2. Choose the **Report Frequency** (every minute, hour, or day)
+3. Optionally filter by **store** or **product category**
+4. Click **Create Schedule**
 
-Inventory changes made through the internal website are reflected on the customer website (`website_url` output) in real time. Similarly, changes made through the POS API are visible on both websites, since all services share the same database.
+Reports are generated automatically at the specified frequency. Each report is a CSV file containing:
+- Product barcode
+- Product name
+- Total quantity deducted during the lookback window
+- Total revenue (calculated using the price at the time of each deduction, including sale discounts)
 
+You can **view reports** inline or **download** them as CSV files. You can also **delete** a schedule, which stops future report generation and removes all previously generated reports for that schedule.
 ---
 
 ## Repeatability
