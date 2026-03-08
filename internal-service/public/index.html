@@ -52,6 +52,10 @@
         <header class="dashboard-header">
             <div class="header-left">
                 <h1>🌾 Employee Portal</h1>
+                <nav class="header-nav">
+                    <button class="nav-tab active" data-tab="inventory" id="tab-inventory">Inventory</button>
+                    <button class="nav-tab" data-tab="reports" id="tab-reports">Reports</button>
+                </nav>
             </div>
             <div class="header-right">
                 <span id="user-email" class="user-info"></span>
@@ -59,7 +63,8 @@
             </div>
         </header>
 
-        <div class="dashboard-container">
+        <!-- ===== INVENTORY TAB ===== -->
+        <div class="dashboard-container" id="inventory-tab">
             <!-- Store Selector -->
             <section class="card" id="store-section">
                 <h2>Select Store</h2>
@@ -75,7 +80,6 @@
                     <button id="add-product-btn" class="btn-primary">+ Add Product</button>
                 </div>
 
-
                 <table id="inventory-table">
                     <thead>
                         <tr>
@@ -90,6 +94,63 @@
                     </tbody>
                 </table>
                 <p id="inventory-empty" style="display:none;" class="empty-state">No products stocked at this store.</p>
+            </section>
+        </div>
+
+        <!-- ===== REPORTS TAB ===== -->
+        <div class="dashboard-container" id="reports-tab" style="display:none;">
+            <!-- Create Schedule -->
+            <section class="card">
+                <h2>Schedule a New Report</h2>
+                <form id="schedule-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="schedule-lookback">Lookback Window</label>
+                            <select id="schedule-lookback" required>
+                                <option value="hour">Previous Hour</option>
+                                <option value="day">Previous Day</option>
+                                <option value="week">Previous Week</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule-frequency">Report Frequency</label>
+                            <select id="schedule-frequency" required>
+                                <option value="minute">Every Minute</option>
+                                <option value="hour">Every Hour</option>
+                                <option value="day">Every Day</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="schedule-filter-type">Filter By</label>
+                            <select id="schedule-filter-type">
+                                <option value="">All (No Filter)</option>
+                                <option value="store">Specific Store</option>
+                                <option value="category">Product Category</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="filter-value-group" style="display:none;">
+                            <label for="schedule-filter-value" id="filter-value-label">Filter Value</label>
+                            <select id="schedule-filter-value">
+                                <option value="">Select...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="max-width: 280px;">Create Schedule</button>
+                    <p id="schedule-error" class="error-msg"></p>
+                    <p id="schedule-success" class="success-msg"></p>
+                </form>
+            </section>
+
+            <!-- Active Schedules -->
+            <section class="card">
+                <div class="section-header">
+                    <h2>Scheduled Reports</h2>
+                    <button id="refresh-schedules-btn" class="btn-secondary">↻ Refresh</button>
+                </div>
+                <div id="schedules-list"></div>
+                <p id="schedules-empty" class="empty-state" style="display:none;">No report schedules created yet.</p>
             </section>
         </div>
     </div>
@@ -113,6 +174,33 @@
             </div>
             <button id="confirm-add-btn" class="btn-primary">Add to Inventory</button>
             <p id="add-error" class="error-msg"></p>
+        </div>
+    </div>
+
+    <!-- Report Viewer Modal -->
+    <div id="report-modal" class="modal" style="display:none;">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3 id="report-modal-title">Report</h3>
+                <button id="close-report-modal-btn" class="btn-close">&times;</button>
+            </div>
+            <div id="report-modal-body">
+                <table id="report-preview-table">
+                    <thead>
+                        <tr>
+                            <th>Barcode</th>
+                            <th>Product</th>
+                            <th>Qty Deducted</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-preview-body"></tbody>
+                </table>
+                <p id="report-preview-empty" class="empty-state" style="display:none;">No deductions recorded during this period.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="report-download-btn" class="btn-primary" style="max-width: 200px;">Download CSV</button>
+            </div>
         </div>
     </div>
 

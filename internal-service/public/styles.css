@@ -113,8 +113,25 @@ body {
     color: #3f3f46;
 }
 
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
 .error-msg {
     color: #f87171;
+    font-size: 0.85rem;
+    margin-top: 14px;
+    min-height: 20px;
+    font-weight: 500;
+}
+
+.success-msg {
+    color: #34d399;
     font-size: 0.85rem;
     margin-top: 14px;
     min-height: 20px;
@@ -176,6 +193,25 @@ button[type="submit"]:active,
     transform: translateY(0);
 }
 
+.btn-secondary {
+    padding: 8px 18px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    color: #a1a1aa;
+    border: 1px solid rgba(161, 161, 170, 0.25);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    color: #e4e4e7;
+    border-color: rgba(161, 161, 170, 0.5);
+    background: rgba(255, 255, 255, 0.04);
+}
+
 /* ===== Dashboard Header ===== */
 .dashboard-header {
     display: flex;
@@ -191,11 +227,50 @@ button[type="submit"]:active,
     z-index: 100;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
 .dashboard-header h1 {
     font-size: 1.25rem;
     font-weight: 700;
     color: #fff;
     letter-spacing: -0.3px;
+}
+
+.header-nav {
+    display: flex;
+    gap: 4px;
+    background: rgba(13, 15, 25, 0.5);
+    border-radius: 10px;
+    padding: 3px;
+    border: 1px solid rgba(63, 63, 70, 0.25);
+}
+
+.nav-tab {
+    padding: 8px 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    color: #71717a;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.2px;
+}
+
+.nav-tab:hover {
+    color: #a1a1aa;
+}
+
+.nav-tab.active {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.1);
 }
 
 .header-right {
@@ -470,6 +545,13 @@ button[type="submit"]:active,
     animation: fadeInUp 0.3s ease;
 }
 
+.modal-wide {
+    max-width: 720px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -482,6 +564,19 @@ button[type="submit"]:active,
     font-weight: 600;
     color: #fff;
     letter-spacing: -0.2px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(63, 63, 70, 0.2);
+}
+
+#report-modal-body {
+    overflow-y: auto;
+    flex: 1;
 }
 
 .btn-close {
@@ -533,6 +628,234 @@ button[type="submit"]:active,
     width: 100%;
 }
 
+/* ===== Schedule Cards ===== */
+.schedule-card {
+    background: rgba(13, 15, 25, 0.5);
+    border: 1px solid rgba(63, 63, 70, 0.25);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    transition: all 0.25s;
+}
+
+.schedule-card:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+    background: rgba(13, 15, 25, 0.7);
+}
+
+.schedule-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.schedule-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.schedule-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.badge-secondary {
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+    border-color: rgba(139, 92, 246, 0.15);
+}
+
+.badge-tertiary {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+.schedule-details {
+    font-size: 0.78rem;
+    color: #71717a;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.schedule-details strong {
+    color: #a1a1aa;
+}
+
+.separator {
+    color: #3f3f46;
+}
+
+.schedule-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-view-reports {
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-view-reports:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.btn-delete-schedule {
+    padding: 7px 16px;
+}
+
+/* ===== Reports List (inline) ===== */
+.reports-list {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(63, 63, 70, 0.2);
+    animation: fadeInUp 0.25s ease;
+}
+
+.reports-empty {
+    color: #52525b;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 12px 0;
+}
+
+.report-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    transition: background 0.2s;
+}
+
+.report-item:hover {
+    background: rgba(99, 102, 241, 0.04);
+}
+
+.report-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.report-window {
+    font-size: 0.82rem;
+    color: #e4e4e7;
+    font-weight: 500;
+}
+
+.report-generated {
+    font-size: 0.72rem;
+    color: #52525b;
+}
+
+.report-item-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-view {
+    padding: 5px 14px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    background: rgba(34, 197, 94, 0.1);
+    color: #34d399;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-view:hover {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.btn-download {
+    padding: 5px 14px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-download:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* ===== Report Preview Table ===== */
+#report-preview-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#report-preview-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(63, 63, 70, 0.3);
+    background: rgba(13, 15, 25, 0.3);
+}
+
+#report-preview-table th:first-child {
+    border-radius: 10px 0 0 0;
+}
+
+#report-preview-table th:last-child {
+    border-radius: 0 10px 0 0;
+}
+
+#report-preview-table td {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(63, 63, 70, 0.15);
+    vertical-align: middle;
+}
+
+#report-preview-table code {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    background: rgba(13, 15, 25, 0.6);
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
 /* ===== Empty State ===== */
 .empty-state {
     text-align: center;
@@ -569,6 +892,11 @@ button[type="submit"]:active,
         padding: 16px 20px;
     }
 
+    .header-left {
+        flex-direction: column;
+        gap: 12px;
+    }
+
     .dashboard-container {
         padding: 0 16px;
         margin: 20px auto;
@@ -584,6 +912,11 @@ button[type="submit"]:active,
         align-items: flex-start;
     }
 
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
     #inventory-table th,
     #inventory-table td {
         padding: 10px 12px;
@@ -593,5 +926,19 @@ button[type="submit"]:active,
     .login-container {
         margin: 16px;
         padding: 36px 28px;
+    }
+
+    .schedule-card {
+        padding: 16px;
+    }
+
+    .schedule-actions {
+        flex-direction: column;
+    }
+
+    .report-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 }
