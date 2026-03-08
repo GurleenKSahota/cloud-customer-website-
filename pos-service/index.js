@@ -17,6 +17,36 @@ const pool = new Pool({
   max: 5,
 });
 
+// --- Helper: Get unit price with active sale discounts applied ---
+async function getUnitPrice(dbClient, barcode) {
+  const result = await dbClient.query(
+    `SELECT p.price,
+            COALESCE(MAX(s.discount_percentage), 0) AS discount
+     FROM products p
+     LEFT JOIN sale_products sp ON sp.product_id = p.id
+     LEFT JOIN sales s ON (s.id = sp.sale_id OR s.product_line = p.product_line)
+       AND s.is_active = true
+     WHERE p.barcode = $1
+     GROUP BY p.id`,
+    [barcode]
+  );
+  if (result.rows.length === 0) return null;
+  const { price, discount } = result.rows[0];
+  return discount > 0
+    ? +(parseFloat(price) * (1 - parseFloat(discount) / 100)).toFixed(2)
+    : +parseFloat(price);
+}
+
+// --- Helper: Log a deduction to deduction_log ---
+async function logDeduction(dbClient, storeId, barcode, quantity, unitPrice) {
+  await dbClient.query(
+    `INSERT INTO deduction_log (store_id, product_id, quantity, unit_price)
+     SELECT $1, p.id, $2, $3
+     FROM products p WHERE p.barcode = $4`,
+    [storeId, quantity, unitPrice, barcode]
+  );
+}
+
 // --- Health check ---
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -133,6 +163,7 @@ app.get('/inventory/price', async (req, res) => {
 // POST /inventory/deduct  body: { storeId, barcode, quantity }
 
 app.post('/inventory/deduct', async (req, res) => {
+  const client = await pool.connect();
   try {
     const { storeId, barcode, quantity } = req.body;
 
@@ -145,8 +176,10 @@ app.post('/inventory/deduct', async (req, res) => {
       return res.status(400).json({ error: 'quantity must be a positive integer' });
     }
 
+    await client.query('BEGIN');
+
     // Atomic: deduct only if enough stock exists
-    const result = await pool.query(
+    const result = await client.query(
       `UPDATE inventory
        SET quantity = quantity - $1, last_updated = CURRENT_TIMESTAMP
        FROM products p
@@ -159,6 +192,7 @@ app.post('/inventory/deduct', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
       // Determine why it failed — product not found or insufficient stock
       const check = await pool.query(
         `SELECT i.quantity
@@ -178,6 +212,12 @@ app.post('/inventory/deduct', async (req, res) => {
       });
     }
 
+    // Log the deduction with sale price
+    const unitPrice = await getUnitPrice(client, barcode);
+    await logDeduction(client, storeId, barcode, qty, unitPrice);
+
+    await client.query('COMMIT');
+
     return res.json({
       storeId: parseInt(storeId),
       barcode,
@@ -185,8 +225,11 @@ app.post('/inventory/deduct', async (req, res) => {
       remainingQuantity: result.rows[0].remainingQuantity,
     });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Error in /inventory/deduct:', err);
     return res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
   }
 });
 
@@ -258,6 +301,10 @@ app.post('/inventory/deduct-batch', async (req, res) => {
           });
         }
 
+        // Log deduction with sale price
+        const unitPrice = await getUnitPrice(client, item.barcode);
+        await logDeduction(client, storeId, item.barcode, qty, unitPrice);
+
         results.push({
           barcode: item.barcode,
           quantityDeducted: qty,
@@ -279,6 +326,65 @@ app.post('/inventory/deduct-batch', async (req, res) => {
     }
   } catch (err) {
     console.error('Error in /inventory/deduct-batch:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// --- Endpoint: Restock inventory ---
+// POST /inventory/restock  body: { amount, storeId? }
+
+app.post('/inventory/restock', async (req, res) => {
+  try {
+    const { amount, storeId } = req.body;
+
+    if (!amount || parseInt(amount) <= 0) {
+      return res.status(400).json({ error: 'amount must be a positive integer' });
+    }
+
+    const qty = parseInt(amount);
+    let result;
+
+    if (storeId) {
+      result = await pool.query(
+        `UPDATE inventory SET quantity = quantity + $1, last_updated = CURRENT_TIMESTAMP
+         WHERE store_id = $2
+         RETURNING id`,
+        [qty, parseInt(storeId)]
+      );
+    } else {
+      result = await pool.query(
+        `UPDATE inventory SET quantity = quantity + $1, last_updated = CURRENT_TIMESTAMP
+         RETURNING id`,
+        [qty]
+      );
+    }
+
+    return res.json({
+      message: 'Inventory restocked successfully',
+      itemsRestocked: result.rowCount,
+      amountAdded: qty,
+    });
+  } catch (err) {
+    console.error('Error in /inventory/restock:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// --- Endpoint: List available products with store info (for traffic generator) ---
+// GET /inventory/products
+
+app.get('/inventory/products', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT p.barcode, i.store_id AS "storeId", p.name, i.quantity
+       FROM inventory i
+       JOIN products p ON p.id = i.product_id
+       WHERE i.quantity > 0
+       ORDER BY p.name, i.store_id`
+    );
+    return res.json(result.rows);
+  } catch (err) {
+    console.error('Error in /inventory/products:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
