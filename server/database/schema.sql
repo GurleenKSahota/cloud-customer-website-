@@ -1,4 +1,7 @@
 -- Drop tables if they exist (for clean re-runs)
+DROP TABLE IF EXISTS generated_reports CASCADE;
+DROP TABLE IF EXISTS report_schedules CASCADE;
+DROP TABLE IF EXISTS deduction_log CASCADE;
 DROP TABLE IF EXISTS sale_products CASCADE;
 DROP TABLE IF EXISTS sales CASCADE;
 DROP TABLE IF EXISTS inventory CASCADE;
@@ -72,3 +75,43 @@ CREATE TABLE sale_products (
 
 CREATE INDEX idx_sale_products_product ON sale_products(product_id);
 CREATE INDEX idx_sale_products_sale ON sale_products(sale_id);
+
+-- Deduction log — records every POS deduction with price at time of sale
+CREATE TABLE deduction_log (
+    id SERIAL PRIMARY KEY,
+    store_id INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL,
+    unit_price NUMERIC(10, 2) NOT NULL,
+    deducted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_deduction_log_deducted_at ON deduction_log(deducted_at);
+CREATE INDEX idx_deduction_log_store ON deduction_log(store_id);
+CREATE INDEX idx_deduction_log_product ON deduction_log(product_id);
+CREATE INDEX idx_deduction_log_store_time ON deduction_log(store_id, deducted_at);
+
+-- Report schedules — recurring report configurations
+CREATE TABLE report_schedules (
+    id SERIAL PRIMARY KEY,
+    lookback_window VARCHAR(20) NOT NULL,
+    frequency VARCHAR(20) NOT NULL,
+    filter_type VARCHAR(20),
+    filter_value VARCHAR(255),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_run_at TIMESTAMP
+);
+
+-- Generated reports — CSV content stored per schedule run
+CREATE TABLE generated_reports (
+    id SERIAL PRIMARY KEY,
+    schedule_id INTEGER NOT NULL REFERENCES report_schedules(id) ON DELETE CASCADE,
+    csv_content TEXT NOT NULL,
+    report_start TIMESTAMP NOT NULL,
+    report_end TIMESTAMP NOT NULL,
+    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_generated_reports_schedule ON generated_reports(schedule_id);
+CREATE INDEX idx_generated_reports_generated_at ON generated_reports(generated_at);
